@@ -34,6 +34,58 @@ body {
   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
 }
 
+/* Mobile portal wrapper */
+.react-datepicker-popper[data-placement^="bottom"] {
+  padding-top: 0 !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .react-datepicker {
+    font-size: 0.875rem !important;
+  }
+
+  .react-datepicker__month-container {
+    width: 100% !important;
+  }
+
+  .react-datepicker__time-container {
+    width: 100px !important;
+  }
+}
+
+/* Portal for mobile - centers the picker */
+.react-datepicker-wrapper {
+  display: block !important;
+  width: 100% !important;
+}
+
+/* Mobile portal overlay styling */
+.react-datepicker__portal {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 9999 !important;
+  padding: 1rem !important;
+}
+
+.react-datepicker__portal .react-datepicker {
+  position: relative !important;
+  margin: 0 auto !important;
+}
+
+@media (max-width: 768px) {
+  .react-datepicker__portal .react-datepicker {
+    max-width: 90vw !important;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   .react-datepicker {
     border-color: rgba(237, 237, 237, 0.2) !important;

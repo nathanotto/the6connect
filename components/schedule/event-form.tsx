@@ -124,12 +124,14 @@ export function EventForm() {
           onChange={(date) => setSelectedDate(date)}
           showTimeSelect
           timeFormat="h:mm aa"
-          timeIntervals={15}
+          timeIntervals={30}
           dateFormat="MMMM d, yyyy h:mm aa"
           minDate={new Date()}
           placeholderText="Select date and time"
           className="w-full px-3 py-1.5 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background text-sm"
           calendarClassName="bg-background border border-foreground/20 rounded-lg shadow-lg"
+          withPortal
+          portalId="datepicker-portal"
           required
         />
       </div>
