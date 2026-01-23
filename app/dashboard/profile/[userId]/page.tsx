@@ -1,11 +1,10 @@
 /**
  * User Profile Page
  *
- * View member profiles with their commitments and recent activity
+ * View member profiles and their recent activity
  */
 
 import { createClient } from '@/lib/supabase/server';
-import { CommitmentList } from '@/components/commitments/commitment-list';
 import { format } from 'date-fns';
 
 export default async function ProfilePage({
@@ -39,13 +38,6 @@ export default async function ProfilePage({
     );
   }
 
-  // Fetch user's commitments
-  const { data: commitments } = await supabase
-    .from('commitments')
-    .select('*')
-    .eq('user_id', userId)
-    .order('deadline', { ascending: true });
-
   // Fetch recent life status updates
   const { data: recentStatuses } = await supabase
     .from('life_status_updates')
@@ -58,10 +50,6 @@ export default async function ProfilePage({
     .limit(5);
 
   const isOwnProfile = currentUser.id === userId;
-
-  // Separate commitments by status
-  const pending = commitments?.filter((c) => c.status === 'pending') || [];
-  const completed = commitments?.filter((c) => c.status === 'completed') || [];
 
   return (
     <div className="space-y-8">
@@ -86,48 +74,8 @@ export default async function ProfilePage({
         </div>
       </div>
 
-      {/* Commitment Stats */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Commitment Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="border border-foreground/20 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-foreground/60">Active</h3>
-            <p className="text-3xl font-bold mt-1">{pending.length}</p>
-          </div>
-          <div className="border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-green-800 dark:text-green-200">
-              Completed
-            </h3>
-            <p className="text-3xl font-bold mt-1 text-green-800 dark:text-green-200">
-              {completed.length}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Active Commitments */}
-      {pending.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Active Commitments</h2>
-          <CommitmentList commitments={pending} showActions={isOwnProfile} />
-        </div>
-      )}
-
-      {/* Completed Commitments (limited to last 5) */}
-      {completed.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold mb-4">
-            Recently Completed {completed.length > 5 && `(Last 5)`}
-          </h2>
-          <CommitmentList
-            commitments={completed.slice(0, 5)}
-            showActions={false}
-          />
-        </div>
-      )}
-
       {/* Recent Life Status Updates */}
-      {recentStatuses && recentStatuses.length > 0 && (
+      {recentStatuses && recentStatuses.length > 0 ? (
         <div>
           <h2 className="text-xl font-semibold mb-4">Recent Life Updates</h2>
           <div className="space-y-3">
@@ -167,14 +115,12 @@ export default async function ProfilePage({
             ))}
           </div>
         </div>
-      )}
-
-      {commitments && commitments.length === 0 && (
+      ) : (
         <div className="border border-foreground/20 rounded-lg p-8 text-center">
           <p className="text-foreground/60">
             {isOwnProfile
-              ? 'You have no commitments yet.'
-              : `${profile.display_name || profile.full_name} has no commitments yet.`}
+              ? 'You have no recent life updates.'
+              : `${profile.display_name || profile.full_name} has no recent life updates.`}
           </p>
         </div>
       )}

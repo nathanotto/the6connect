@@ -27,16 +27,6 @@ export default async function DashboardPage() {
     .eq('id', user.id)
     .single();
 
-  // Fetch 5 most recent active commitments from all users
-  const { data: commitments } = await supabase
-    .from('commitments')
-    .select(`
-      *,
-      user:users(id, full_name, display_name)
-    `)
-    .eq('status', 'pending')
-    .order('deadline', { ascending: true })
-    .limit(5);
 
   // Fetch recent life status updates
   const { data: recentStatuses } = await supabase
@@ -116,44 +106,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Active Commitments */}
-        <div className="border border-foreground/20 rounded-lg p-6">
-          <h3 className="font-semibold mb-3">Active Commitments</h3>
-          {commitments && commitments.length > 0 ? (
-            <>
-              <div className="space-y-2 mb-3">
-                {commitments.slice(0, 3).map((c: any) => (
-                  <div key={c.id} className="text-sm">
-                    <p className="font-medium truncate">{c.task}</p>
-                    <p className="text-xs text-foreground/60">
-                      {c.user.display_name || c.user.full_name} • Due: {format(new Date(c.deadline), 'MMM d')}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <Link
-                href="/dashboard/commitments"
-                className="text-sm text-foreground/80 hover:text-foreground underline"
-              >
-                View all commitments →
-              </Link>
-            </>
-          ) : (
-            <>
-              <p className="text-sm text-foreground/60 mb-3">
-                No active commitments.
-              </p>
-              <Link
-                href="/dashboard/commitments"
-                className="text-sm text-foreground/80 hover:text-foreground underline"
-              >
-                Create a commitment →
-              </Link>
-            </>
-          )}
-        </div>
-
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Messages - Coming Soon */}
         <div className="border border-foreground/20 rounded-lg p-6">
           <h3 className="font-semibold mb-3">Messages</h3>
@@ -282,18 +235,12 @@ export default async function DashboardPage() {
       {/* Quick Actions */}
       <div className="border border-foreground/20 rounded-lg p-6">
         <h3 className="font-semibold mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <Link
             href="/dashboard/life-status"
             className="border border-foreground/20 rounded-lg p-4 hover:bg-foreground/5 transition text-center"
           >
             <p className="font-medium text-sm">Update Status</p>
-          </Link>
-          <Link
-            href="/dashboard/commitments"
-            className="border border-foreground/20 rounded-lg p-4 hover:bg-foreground/5 transition text-center"
-          >
-            <p className="font-medium text-sm">New Commitment</p>
           </Link>
           <Link
             href="/dashboard/questions"
