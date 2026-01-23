@@ -24,17 +24,30 @@ export default function LoginPage() {
     url: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...',
   });
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
+      // Get values from form elements directly (fixes iOS autofill issue)
+      const formData = new FormData(e.currentTarget);
+      const emailValue = (formData.get('email') as string)?.trim() || email.trim();
+      const passwordValue = (formData.get('password') as string)?.trim() || password.trim();
+
+      console.log('Login attempt:', { hasEmail: !!emailValue, hasPassword: !!passwordValue });
+
+      if (!emailValue || !passwordValue) {
+        setError('Please enter both email and password');
+        setLoading(false);
+        return;
+      }
+
       const supabase = createClient();
 
       const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: emailValue,
+        password: passwordValue,
       });
 
       if (error) {
@@ -83,9 +96,12 @@ export default function LoginPage() {
                 type="email"
                 required
                 autoComplete="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background"
+                className="w-full px-3 py-2 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background text-base"
                 placeholder="your@email.com"
               />
             </div>
@@ -105,7 +121,7 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background"
+                className="w-full px-3 py-2 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background text-base"
                 placeholder="••••••••"
               />
             </div>
