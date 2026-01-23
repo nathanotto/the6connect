@@ -20,9 +20,10 @@ interface DMPreviewListProps {
   messages: DirectMessage[];
   currentUserId: string;
   otherUserId: string;
+  otherUserName?: string;
 }
 
-export function DMPreviewList({ messages, currentUserId, otherUserId }: DMPreviewListProps) {
+export function DMPreviewList({ messages, currentUserId, otherUserId, otherUserName }: DMPreviewListProps) {
   const [expandedMessageId, setExpandedMessageId] = useState<string | null>(null);
 
   const toggleExpand = (messageId: string) => {
@@ -49,7 +50,7 @@ export function DMPreviewList({ messages, currentUserId, otherUserId }: DMPrevie
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-medium">
-                      {isOwnMessage ? 'You' : 'Them'}
+                      {isOwnMessage ? 'You' : (otherUserName || 'Them')}
                     </span>
                     <span className="text-xs text-foreground/60">
                       {format(new Date(message.created_at), 'MMM d, h:mm a')}
