@@ -35,7 +35,15 @@ export async function PATCH(
       );
     }
 
-    const updateData: Record<string, any> = { ...body };
+    // Build update object
+    const updateData: {
+      status?: string;
+      completed_at?: string;
+    } = {};
+
+    if (status) {
+      updateData.status = status;
+    }
 
     // Set completed_at timestamp when marking as completed
     if (status === 'completed') {
@@ -45,7 +53,8 @@ export async function PATCH(
     // Update commitment
     const { data, error } = await supabase
       .from('commitments')
-      .update(updateData as any)
+      // @ts-ignore - Type mismatch due to placeholder database types
+      .update(updateData)
       .eq('id', id)
       .eq('user_id', user.id) // Ensure user owns this commitment
       .select()
@@ -61,6 +70,7 @@ export async function PATCH(
 
     // Log activity if status changed
     if (status) {
+      // @ts-ignore - Type mismatch due to placeholder database types
       await supabase.from('activity_log').insert({
         user_id: user.id,
         activity_type: `commitment_${status}`,
