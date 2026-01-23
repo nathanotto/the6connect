@@ -8,6 +8,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 export function EventForm() {
   const router = useRouter();
@@ -16,8 +18,8 @@ export function EventForm() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    proposed_start: '',
   });
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,10 +27,16 @@ export function EventForm() {
     setLoading(true);
 
     try {
+      if (!selectedDate) {
+        setError('Please select a date and time');
+        setLoading(false);
+        return;
+      }
+
       // Only send non-empty fields
       const payload: any = {
         title: formData.title,
-        proposed_start: formData.proposed_start,
+        proposed_start: selectedDate.toISOString(),
       };
 
       if (formData.description) {
@@ -53,8 +61,8 @@ export function EventForm() {
       setFormData({
         title: '',
         description: '',
-        proposed_start: '',
       });
+      setSelectedDate(null);
 
       // Refresh the page to show new event
       router.refresh();
@@ -111,15 +119,18 @@ export function EventForm() {
         <label htmlFor="proposed_start" className="block text-sm font-medium mb-1">
           Date & Time *
         </label>
-        <input
-          type="datetime-local"
-          id="proposed_start"
-          required
-          value={formData.proposed_start}
-          onChange={(e) =>
-            setFormData({ ...formData, proposed_start: e.target.value })
-          }
+        <DatePicker
+          selected={selectedDate}
+          onChange={(date) => setSelectedDate(date)}
+          showTimeSelect
+          timeFormat="h:mm aa"
+          timeIntervals={15}
+          dateFormat="MMMM d, yyyy h:mm aa"
+          minDate={new Date()}
+          placeholderText="Select date and time"
           className="w-full px-3 py-1.5 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background text-sm"
+          calendarClassName="bg-background border border-foreground/20 rounded-lg shadow-lg"
+          required
         />
       </div>
 
