@@ -1,36 +1,115 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# the6connect
 
-## Getting Started
+Private accountability platform for a 4-person men's group supporting connection, accountability, and growth.
 
-First, run the development server:
+## Features
+
+- **Private Messaging** - Direct messages between group members
+- **Life Status Tracking** - Monitor progress across Personal Growth, Finances, Business, and Goals
+- **Commitments** - Set and track personal commitments with accountability
+- **Questions & Answers** - Reflective questions for the group
+- **AI Exchange Sharing** - Share insights from AI coaching conversations
+- **AI-Powered Summaries** - Generated summaries of member progress
+- **Schedule Coordination** - Coordinate group meetings and availability
+
+## Tech Stack
+
+- **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS v4
+- **Database**: Supabase (PostgreSQL + Auth + Real-time)
+- **AI**: Anthropic Claude API
+- **Deployment**: Vercel
+
+## Setup
+
+**First time setup?** Follow the comprehensive guide in [SETUP.md](./SETUP.md)
+
+Quick steps:
+1. Create a Supabase project
+2. Configure `.env.local` with your credentials
+3. Run database migrations
+4. Create user accounts
+5. Start the dev server: `npm run dev`
+
+## Development
 
 ```bash
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Open http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project Structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+the6connect/
+├── app/
+│   ├── (auth)/login/          # Login page
+│   ├── (dashboard)/           # Protected dashboard pages
+│   │   ├── messages/
+│   │   ├── life-status/
+│   │   ├── commitments/
+│   │   ├── questions/
+│   │   ├── ai-exchanges/
+│   │   ├── summaries/
+│   │   ├── schedule/
+│   │   └── profile/
+│   └── api/                   # API routes (coming soon)
+├── components/
+│   └── layout/                # Navigation, sidebar
+├── lib/
+│   ├── supabase/             # Database client utilities
+│   ├── ai/                   # AI integration
+│   └── utils/                # Helper functions
+├── supabase/
+│   └── migrations/           # Database schema
+└── types/                    # TypeScript types
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Database Schema
 
-## Learn More
+Core tables:
+- `users` - User profiles
+- `life_areas` - Life tracking categories
+- `life_status_updates` - Status tracking history
+- `commitments` - User commitments/goals
+- `direct_messages` - Private messaging
+- `questions` & `question_answers` - Q&A system
+- `ai_exchanges` - Shared AI conversations
+- `personal_summaries` - AI-generated summaries
+- `schedule_events` & `schedule_responses` - Event coordination
+- `activity_log` - Audit trail
 
-To learn more about Next.js, take a look at the following resources:
+## Environment Variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+See `.env.example` for required variables:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `ANTHROPIC_API_KEY`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Implementation Status
 
-## Deploy on Vercel
+✅ **Phase 1: Foundation** (Complete)
+- Database schema and RLS policies
+- Authentication system
+- Dashboard layout with navigation
+- Empty state pages
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+🚧 **Phase 2: Life Status & Commitments** (Next)
+- Life status tracking
+- Commitments feature
+- Profile pages
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+📋 **Upcoming Phases:**
+- Questions & Messaging
+- AI Exchanges & Schedule
+- AI Summary Generation
+- Polish & History
+
+## License
+
+Private project for 4-person men's accountability group.
