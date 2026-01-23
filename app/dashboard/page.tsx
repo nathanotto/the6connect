@@ -94,6 +94,16 @@ export default async function DashboardPage() {
     })
   );
 
+  // Fetch recent photos (last 5)
+  const { data: recentPhotos } = await supabase
+    .from('photos')
+    .select(`
+      *,
+      user:users!photos_user_id_fkey(id, full_name, display_name)
+    `)
+    .order('created_at', { ascending: false })
+    .limit(5);
+
   return (
     <div className="space-y-8">
       <div>
@@ -106,14 +116,14 @@ export default async function DashboardPage() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Active Commitments */}
         <div className="border border-foreground/20 rounded-lg p-6">
           <h3 className="font-semibold mb-3">Active Commitments</h3>
           {commitments && commitments.length > 0 ? (
             <>
               <div className="space-y-2 mb-3">
-                {commitments.map((c: any) => (
+                {commitments.slice(0, 3).map((c: any) => (
                   <div key={c.id} className="text-sm">
                     <p className="font-medium truncate">{c.task}</p>
                     <p className="text-xs text-foreground/60">
@@ -156,6 +166,48 @@ export default async function DashboardPage() {
           >
             View messages →
           </Link>
+        </div>
+
+        {/* Recent Photos */}
+        <div className="border border-foreground/20 rounded-lg p-6">
+          <h3 className="font-semibold mb-3">Recent Photos</h3>
+          {recentPhotos && recentPhotos.length > 0 ? (
+            <>
+              <div className="space-y-2 mb-3">
+                {recentPhotos.map((photo: any) => (
+                  <div key={photo.id} className="text-sm border-b border-foreground/10 pb-2 last:border-0">
+                    <p className="font-medium text-xs text-foreground/80">
+                      {photo.user.display_name || photo.user.full_name}
+                    </p>
+                    <p className="text-xs text-foreground/60 truncate">
+                      {photo.caption || 'No caption'}
+                    </p>
+                    <p className="text-xs text-foreground/40">
+                      {format(new Date(photo.created_at), 'MMM d, h:mm a')}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <Link
+                href="/dashboard/photos"
+                className="text-sm text-foreground/80 hover:text-foreground underline"
+              >
+                View all photos →
+              </Link>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-foreground/60 mb-3">
+                No photos yet.
+              </p>
+              <Link
+                href="/dashboard/photos"
+                className="text-sm text-foreground/80 hover:text-foreground underline"
+              >
+                Share a photo →
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
@@ -243,10 +295,10 @@ export default async function DashboardPage() {
             <p className="font-medium text-sm">Ask Question</p>
           </Link>
           <Link
-            href="/dashboard/ai-exchanges"
+            href="/dashboard/photos"
             className="border border-foreground/20 rounded-lg p-4 hover:bg-foreground/5 transition text-center"
           >
-            <p className="font-medium text-sm">Share AI Chat</p>
+            <p className="font-medium text-sm">Share Photo</p>
           </Link>
         </div>
       </div>
