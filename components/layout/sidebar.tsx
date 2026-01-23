@@ -43,8 +43,6 @@ export function Sidebar({ user, profile }: SidebarProps) {
     { name: 'Life Status', href: '/dashboard/life-status', icon: 'Activity' },
     { name: 'Commitments', href: '/dashboard/commitments', icon: 'CheckSquare' },
     { name: 'Questions', href: '/dashboard/questions', icon: 'HelpCircle' },
-    { name: 'AI Exchanges', href: '/dashboard/ai-exchanges', icon: 'Sparkles' },
-    { name: 'Summaries', href: '/dashboard/summaries', icon: 'FileText' },
     { name: 'Schedule', href: '/dashboard/schedule', icon: 'Calendar' },
   ];
 
