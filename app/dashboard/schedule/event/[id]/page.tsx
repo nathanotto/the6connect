@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ResponseForm } from '@/components/schedule/response-form';
+import { SendInviteButton } from '@/components/schedule/send-invite-button';
 
 export default async function EventDetailPage({
   params,
@@ -55,6 +56,16 @@ export default async function EventDetailPage({
   const unavailableResponses = event.responses.filter((r: any) => r.response === 'unavailable');
   const maybeResponses = event.responses.filter((r: any) => r.response === 'maybe');
 
+  // Fetch all users for calendar invite
+  const { data: allUsers } = await supabase
+    .from('users')
+    .select('id, full_name, display_name, email')
+    .order('full_name', { ascending: true });
+
+  const isCreator = user.id === event.created_by.id;
+  const recipientNames =
+    allUsers?.map((u) => u.display_name || u.full_name) || [];
+
   return (
     <div className="space-y-8">
       <div>
@@ -100,6 +111,18 @@ export default async function EventDetailPage({
             </div>
           )}
         </div>
+
+        {/* Send Calendar Invite Button (only for event creator) */}
+        {isCreator && (
+          <div className="mt-6 pt-6 border-t border-foreground/10">
+            <SendInviteButton
+              eventId={id}
+              eventTitle={event.title}
+              recipientNames={recipientNames}
+              isCreator={isCreator}
+            />
+          </div>
+        )}
       </div>
 
       {/* Your Response */}
