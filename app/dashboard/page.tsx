@@ -173,18 +173,25 @@ export default async function DashboardPage() {
           <h3 className="font-semibold mb-3">Recent Photos</h3>
           {recentPhotos && recentPhotos.length > 0 ? (
             <>
-              <div className="space-y-2 mb-3">
+              <div className="space-y-3 mb-3">
                 {recentPhotos.map((photo: any) => (
-                  <div key={photo.id} className="text-sm border-b border-foreground/10 pb-2 last:border-0">
-                    <p className="font-medium text-xs text-foreground/80">
-                      {photo.user.display_name || photo.user.full_name}
-                    </p>
-                    <p className="text-xs text-foreground/60 truncate">
-                      {photo.caption || 'No caption'}
-                    </p>
-                    <p className="text-xs text-foreground/40">
-                      {format(new Date(photo.created_at), 'MMM d, h:mm a')}
-                    </p>
+                  <div key={photo.id} className="flex gap-3 border-b border-foreground/10 pb-3 last:border-0">
+                    <img
+                      src={photo.photo_url}
+                      alt={photo.caption || 'Photo'}
+                      className="w-16 h-16 object-cover rounded flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0 text-sm">
+                      <p className="font-medium text-xs text-foreground/80">
+                        {photo.user.display_name || photo.user.full_name}
+                      </p>
+                      <p className="text-xs text-foreground/60 truncate">
+                        {photo.caption || 'No caption'}
+                      </p>
+                      <p className="text-xs text-foreground/40">
+                        {format(new Date(photo.created_at), 'MMM d, h:mm a')}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
