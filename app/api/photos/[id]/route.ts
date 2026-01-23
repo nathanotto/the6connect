@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function DELETE(
   request: NextRequest,
@@ -54,8 +55,9 @@ export async function DELETE(
       );
     }
 
-    // Delete from storage
-    await supabase.storage.from('photos').remove([fileName]);
+    // Delete from storage using admin client
+    const adminClient = createAdminClient();
+    await adminClient.storage.from('photos').remove([fileName]);
 
     return NextResponse.json({ success: true });
   } catch (error) {

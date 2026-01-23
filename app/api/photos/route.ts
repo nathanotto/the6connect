@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,8 +52,11 @@ export async function POST(request: NextRequest) {
     const fileExt = photo.name.split('.').pop();
     const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
+    // Use admin client for storage upload (bypasses RLS)
+    const adminClient = createAdminClient();
+
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await adminClient.storage
       .from('photos')
       .upload(fileName, photo, {
         contentType: photo.type,
@@ -63,7 +67,7 @@ export async function POST(request: NextRequest) {
     if (uploadError) {
       console.error('Upload error:', uploadError);
       return NextResponse.json(
-        { error: 'Failed to upload photo' },
+        { error: `Failed to upload photo: ${uploadError.message}` },
         { status: 500 }
       );
     }
@@ -71,7 +75,7 @@ export async function POST(request: NextRequest) {
     // Get public URL
     const {
       data: { publicUrl },
-    } = supabase.storage.from('photos').getPublicUrl(fileName);
+    } = adminClient.storage.from('photos').getPublicUrl(fileName);
 
     // Save metadata to database
     const { data: photoData, error: dbError } = await supabase
