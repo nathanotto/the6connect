@@ -35,7 +35,7 @@ export async function PATCH(
       );
     }
 
-    const updateData: any = { ...body };
+    const updateData: Record<string, any> = { ...body };
 
     // Set completed_at timestamp when marking as completed
     if (status === 'completed') {
@@ -45,7 +45,7 @@ export async function PATCH(
     // Update commitment
     const { data, error } = await supabase
       .from('commitments')
-      .update(updateData)
+      .update(updateData as any)
       .eq('id', id)
       .eq('user_id', user.id) // Ensure user owns this commitment
       .select()
