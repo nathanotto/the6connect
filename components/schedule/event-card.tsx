@@ -15,6 +15,7 @@ interface EventCardProps {
     proposed_start: string;
     proposed_end?: string;
     is_confirmed: boolean;
+    invited_user_ids?: string[];
     created_by: {
       id: string;
       full_name: string;
@@ -24,12 +25,13 @@ interface EventCardProps {
       response: string;
     }>;
   };
+  totalUsers: number;
 }
 
-export function EventCard({ event }: EventCardProps) {
-  const availableCount = event.responses.filter((r) => r.response === 'available').length;
-  const unavailableCount = event.responses.filter((r) => r.response === 'unavailable').length;
-  const maybeCount = event.responses.filter((r) => r.response === 'maybe').length;
+export function EventCard({ event, totalUsers }: EventCardProps) {
+  const invitedUserIds = (event.invited_user_ids as string[]) || [];
+  const invitedCount = invitedUserIds.length;
+  const notInvitedCount = totalUsers - invitedCount;
 
   return (
     <Link
@@ -62,19 +64,20 @@ export function EventCard({ event }: EventCardProps) {
           </p>
         </div>
 
-        {/* Response Summary */}
+        {/* Invite Status */}
         <div className="text-right">
-          <div className="text-xs text-foreground/60 mb-1">Responses:</div>
-          <div className="space-y-1 text-sm">
-            <div className="text-green-700 dark:text-green-300">
-              ✓ {availableCount} available
-            </div>
-            <div className="text-red-700 dark:text-red-300">
-              ✗ {unavailableCount} unavailable
-            </div>
-            <div className="text-yellow-700 dark:text-yellow-300">
-              ? {maybeCount} maybe
-            </div>
+          <div className="text-xs text-foreground/60 mb-1">Invited:</div>
+          <div className="text-sm">
+            {invitedCount === 0 ? (
+              <div className="text-red-700 dark:text-red-300">None invited</div>
+            ) : invitedCount === totalUsers ? (
+              <div className="text-green-700 dark:text-green-300">All invited</div>
+            ) : (
+              <>
+                <div className="text-green-700 dark:text-green-300">{invitedCount} invited</div>
+                <div className="text-red-700 dark:text-red-300">{notInvitedCount} not yet invited</div>
+              </>
+            )}
           </div>
         </div>
       </div>

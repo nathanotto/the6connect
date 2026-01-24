@@ -63,8 +63,7 @@ export default async function EventDetailPage({
     .order('full_name', { ascending: true });
 
   const isCreator = user.id === event.created_by.id;
-  const recipientNames =
-    allUsers?.map((u) => u.display_name || u.full_name) || [];
+  const invitedUserIds = (event.invited_user_ids as string[]) || [];
 
   return (
     <div className="space-y-8">
@@ -112,13 +111,14 @@ export default async function EventDetailPage({
           )}
         </div>
 
-        {/* Send Calendar Invite Button (only for event creator) */}
-        {isCreator && (
+        {/* Send Calendar Invite Links (only for event creator) */}
+        {isCreator && allUsers && (
           <div className="mt-6 pt-6 border-t border-foreground/10">
             <SendInviteButton
               eventId={id}
               eventTitle={event.title}
-              recipientNames={recipientNames}
+              users={allUsers}
+              invitedUserIds={invitedUserIds}
               isCreator={isCreator}
             />
           </div>

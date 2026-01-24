@@ -28,6 +28,8 @@ export async function POST(
     }
 
     const { id } = await params;
+    const body = await request.json();
+    const { userId } = body; // Optional: if provided, send to single user
 
     // Fetch event details
     const { data: event, error: eventError } = await supabase
@@ -66,6 +68,11 @@ export async function POST(
       );
     }
 
+    // Filter users based on userId parameter
+    const recipientsToSend = userId
+      ? allUsers.filter((u) => u.id === userId)
+      : allUsers;
+
     // Generate ICS calendar file
     const icsContent = generateICS({
       title: event.title,
@@ -80,8 +87,8 @@ export async function POST(
     // Convert ICS content to base64 for attachment
     const icsBase64 = Buffer.from(icsContent).toString('base64');
 
-    // Send email to each user
-    const emailPromises = allUsers.map(async (recipient) => {
+    // Send email to each recipient
+    const emailPromises = recipientsToSend.map(async (recipient) => {
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">Calendar Invitation</h2>
@@ -138,7 +145,24 @@ export async function POST(
       );
     }
 
-    return NextResponse.json({ success: true, sent: results.length });
+    // Update invited_user_ids in the event
+    const currentInvitedIds = (event.invited_user_ids as string[]) || [];
+    const newInvitedIds = recipientsToSend.map((u) => u.id);
+    const updatedInvitedIds = [
+      ...new Set([...currentInvitedIds, ...newInvitedIds]),
+    ];
+
+    // @ts-ignore
+    await supabase
+      .from('schedule_events')
+      .update({ invited_user_ids: updatedInvitedIds })
+      .eq('id', id);
+
+    return NextResponse.json({
+      success: true,
+      sent: results.length,
+      sentTo: recipientsToSend.map((u) => u.display_name || u.full_name),
+    });
   } catch (error) {
     console.error('Calendar invite error:', error);
     return NextResponse.json(

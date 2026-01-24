@@ -1,44 +1,53 @@
 'use client';
 
 /**
- * Send Calendar Invite Button
+ * Send Calendar Invite Links
  *
- * Allows event creator to send calendar invites to all members
+ * Allows event creator to send calendar invites individually or to all
  */
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+interface User {
+  id: string;
+  full_name: string;
+  display_name: string | null;
+}
+
 interface SendInviteButtonProps {
   eventId: string;
   eventTitle: string;
-  recipientNames: string[];
+  users: User[];
+  invitedUserIds: string[];
   isCreator: boolean;
 }
 
 export function SendInviteButton({
   eventId,
   eventTitle,
-  recipientNames,
+  users,
+  invitedUserIds,
   isCreator,
 }: SendInviteButtonProps) {
   const router = useRouter();
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [sending, setSending] = useState(false);
+  const [sendingUserId, setSendingUserId] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
 
   if (!isCreator) {
     return null;
   }
 
-  const handleSend = async () => {
-    setSending(true);
+  const handleSend = async (userId?: string) => {
+    setSendingUserId(userId || 'all');
     setError('');
 
     try {
       const response = await fetch(`/api/schedule/${eventId}/send-invite`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
       });
 
       const result = await response.json();
@@ -47,61 +56,69 @@ export function SendInviteButton({
         throw new Error(result.error || 'Failed to send calendar invites');
       }
 
-      setSuccess(true);
-      setShowConfirm(false);
-      setTimeout(() => setSuccess(false), 3000);
+      // Show success popup
+      const sentToNames = result.sentTo.join(', ');
+      setSuccessMessage(`Email invite to ${eventTitle} sent to ${sentToNames}`);
+
+      // Close popup after 2 seconds
+      setTimeout(() => {
+        setSuccessMessage(null);
+        router.refresh(); // Refresh to update invite status
+      }, 2000);
     } catch (err: any) {
       setError(err.message);
     } finally {
-      setSending(false);
+      setSendingUserId(null);
     }
   };
 
   return (
     <div>
-      <button
-        onClick={() => setShowConfirm(true)}
-        className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-        disabled={sending || success}
-      >
-        {success ? '✓ Sent!' : 'Email calendar invite to The Six'}
-      </button>
+      <div className="space-y-2">
+        <p className="text-sm font-medium text-foreground/80">Send Calendar Invite:</p>
+        <div className="flex flex-wrap gap-2 items-center">
+          {/* Invite All */}
+          <button
+            onClick={() => handleSend()}
+            disabled={sendingUserId !== null}
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-50"
+          >
+            {sendingUserId === 'all' ? 'Sending...' : 'Invite all'}
+          </button>
 
-      {success && (
-        <p className="text-sm text-green-600 dark:text-green-400 mt-2">
-          Calendar invites sent successfully!
-        </p>
-      )}
+          {/* Individual user links */}
+          {users.map((user) => {
+            const isInvited = invitedUserIds.includes(user.id);
+            const userName = user.display_name || user.full_name;
+            const isSending = sendingUserId === user.id;
+
+            return (
+              <button
+                key={user.id}
+                onClick={() => handleSend(user.id)}
+                disabled={sendingUserId !== null}
+                className="text-sm text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-50"
+              >
+                {isSending
+                  ? 'Sending...'
+                  : isInvited
+                  ? `Invite ${userName} again`
+                  : `Invite ${userName}`}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {error && (
         <p className="text-sm text-red-600 dark:text-red-400 mt-2">{error}</p>
       )}
 
-      {/* Confirmation Dialog */}
-      {showConfirm && (
+      {/* Success Popup */}
+      {successMessage && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-background border border-foreground/20 rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold mb-3">Send calendar invite?</h3>
-            <p className="text-foreground/80 mb-4">
-              Send calendar invite to <strong>{recipientNames.join(', ')}</strong> for{' '}
-              <strong>{eventTitle}</strong>?
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setShowConfirm(false)}
-                disabled={sending}
-                className="px-4 py-2 border border-foreground/20 rounded-lg hover:bg-foreground/5 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSend}
-                disabled={sending}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-              >
-                {sending ? 'Sending...' : 'Yes, send invite'}
-              </button>
-            </div>
+            <p className="text-foreground">{successMessage}</p>
           </div>
         </div>
       )}

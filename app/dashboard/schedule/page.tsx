@@ -30,6 +30,11 @@ export default async function SchedulePage() {
     `)
     .order('proposed_start', { ascending: true });
 
+  // Get total user count
+  const { count: totalUsers } = await supabase
+    .from('users')
+    .select('*', { count: 'exact', head: true });
+
   // Separate upcoming and past events
   const upcomingEvents = events?.filter((event) =>
     isFuture(new Date(event.proposed_start))
@@ -59,7 +64,7 @@ export default async function SchedulePage() {
         {upcomingEvents && upcomingEvents.length > 0 ? (
           <div className="space-y-3">
             {upcomingEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} totalUsers={totalUsers || 4} />
             ))}
           </div>
         ) : (
@@ -77,7 +82,7 @@ export default async function SchedulePage() {
           <h2 className="text-xl font-semibold mb-4">Past Events</h2>
           <div className="space-y-3">
             {pastEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} totalUsers={totalUsers || 4} />
             ))}
           </div>
         </div>
