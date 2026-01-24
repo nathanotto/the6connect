@@ -121,6 +121,13 @@ export function Sidebar({ user, profile }: SidebarProps) {
           >
             {profile?.display_name || profile?.full_name || 'Profile'}
           </Link>
+          <Link
+            href="/dashboard/settings"
+            onClick={closeMobileMenu}
+            className="block px-4 py-2 rounded-lg hover:bg-background/10 transition"
+          >
+            ⚙️ Settings
+          </Link>
           <button
             onClick={handleSignOut}
             className="w-full text-left px-4 py-2 rounded-lg hover:bg-background/10 transition"
