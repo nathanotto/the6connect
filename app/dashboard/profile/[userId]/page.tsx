@@ -63,7 +63,7 @@ export default async function ProfilePage({
             )}
             <p className="text-sm text-foreground/60 mt-2">{profile.email}</p>
             <p className="text-xs text-foreground/40 mt-1">
-              Member since {format(new Date(profile.created_at), 'MMM yyyy')}
+              Member since 2017
             </p>
           </div>
           {isOwnProfile && (

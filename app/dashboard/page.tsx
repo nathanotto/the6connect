@@ -94,31 +94,107 @@ export default async function DashboardPage() {
     .order('created_at', { ascending: false })
     .limit(5);
 
+  // Fetch recent group messages
+  const { data: groupMessages } = await supabase
+    .from('group_messages')
+    .select(`
+      *,
+      sender:users!group_messages_sender_id_fkey(id, full_name, display_name)
+    `)
+    .order('created_at', { ascending: false })
+    .limit(5);
+
+  // Fetch recent direct messages (either sent or received by current user)
+  const { data: directMessages } = await supabase
+    .from('direct_messages')
+    .select(`
+      *,
+      sender:users!direct_messages_sender_id_fkey(id, full_name, display_name)
+    `)
+    .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
+    .order('created_at', { ascending: false })
+    .limit(5);
+
+  // Combine and sort all messages
+  const allMessages = [
+    ...(groupMessages || []).map((m: any) => ({
+      ...m,
+      type: 'group',
+      username: m.sender.display_name || m.sender.full_name,
+    })),
+    ...(directMessages || []).map((m: any) => ({
+      ...m,
+      type: 'dm',
+      username: m.sender.display_name || m.sender.full_name,
+    })),
+  ]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 5);
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">
-          Welcome back, {profile?.display_name || profile?.full_name || 'Friend'}!
-        </h1>
-        <p className="text-foreground/60 mt-2">
-          Here's your overview for the6connect
-        </p>
+      <div className="flex items-center gap-4">
+        {profile?.profile_picture_url && (
+          <img
+            src={profile.profile_picture_url}
+            alt="Profile"
+            className="w-16 h-16 rounded-full object-cover border-2 border-foreground/20"
+          />
+        )}
+        <div>
+          <h1 className="text-3xl font-bold">
+            Welcome back, {profile?.display_name || profile?.full_name || 'Friend'}!
+          </h1>
+          <p className="text-foreground/60 mt-2">
+            Here's your overview for the6connect
+          </p>
+        </div>
       </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Messages - Coming Soon */}
+        {/* Recent Messages */}
         <div className="border border-foreground/20 rounded-lg p-6">
-          <h3 className="font-semibold mb-3">Messages</h3>
-          <p className="text-sm text-foreground/60 mb-3">
-            Messaging coming in Phase 3
-          </p>
-          <Link
-            href="/dashboard/messages"
-            className="text-sm text-foreground/80 hover:text-foreground underline"
-          >
-            View messages →
-          </Link>
+          <h3 className="font-semibold mb-3">Recent Messages</h3>
+          {allMessages && allMessages.length > 0 ? (
+            <>
+              <div className="space-y-2 mb-3">
+                {allMessages.map((msg: any) => {
+                  const truncatedContent =
+                    msg.content.length > 50
+                      ? msg.content.substring(0, 50) + '...'
+                      : msg.content;
+
+                  return (
+                    <div key={`${msg.type}-${msg.id}`} className="text-sm border-b border-foreground/10 pb-2 last:border-0">
+                      <div className="text-xs text-foreground/60">
+                        {format(new Date(msg.created_at), 'MMM d')} - {msg.username}
+                      </div>
+                      <p className="text-foreground/80 truncate">{truncatedContent}</p>
+                    </div>
+                  );
+                })}
+              </div>
+              <Link
+                href="/dashboard/messages"
+                className="text-sm text-foreground/80 hover:text-foreground underline"
+              >
+                View all messages →
+              </Link>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-foreground/60 mb-3">
+                No recent messages.
+              </p>
+              <Link
+                href="/dashboard/messages"
+                className="text-sm text-foreground/80 hover:text-foreground underline"
+              >
+                Send a message →
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Recent Photos */}
