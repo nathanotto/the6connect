@@ -10,13 +10,12 @@ import { Resend } from 'resend';
 import { generateICS } from '@/lib/calendar/generate-ics';
 import { format } from 'date-fns';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
     const supabase = await createClient();
 
     const {
