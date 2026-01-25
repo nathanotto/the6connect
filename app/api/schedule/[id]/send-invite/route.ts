@@ -104,7 +104,7 @@ export async function POST(
           <p>Organized by: ${event.created_by.display_name || event.created_by.full_name}</p>
 
           <p style="margin-top: 30px;">
-            <a href="https://the6connect.vercel.app/dashboard/schedule/event/${event.id}"
+            <a href="https://the6connect.com/dashboard/schedule/event/${event.id}"
                style="background: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
               View Event & Respond
             </a>
