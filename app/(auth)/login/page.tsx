@@ -73,6 +73,9 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8 p-8">
         <div className="text-center">
           <h1 className="text-4xl font-bold">the6connect</h1>
+          <p className="mt-2 text-sm text-foreground/60">
+            An app for Joseph, Andrew, Traver and Nathan
+          </p>
           <p className="mt-4 text-sm italic text-foreground/60">
             {inspirationalMessage}
           </p>
