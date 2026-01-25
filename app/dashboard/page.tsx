@@ -8,6 +8,7 @@
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { getRandomMessage } from '@/lib/constants/inspirational-messages';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -131,6 +132,8 @@ export default async function DashboardPage() {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 5);
 
+  const inspirationalMessage = getRandomMessage();
+
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-4">
@@ -147,6 +150,9 @@ export default async function DashboardPage() {
           </h1>
           <p className="text-foreground/60 mt-2">
             Here's your overview for the6connect
+          </p>
+          <p className="text-sm italic text-foreground/60 mt-1">
+            {inspirationalMessage}
           </p>
         </div>
       </div>

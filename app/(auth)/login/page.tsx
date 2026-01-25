@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { getRandomMessage } from '@/lib/constants/inspirational-messages';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -65,6 +66,8 @@ export default function LoginPage() {
     }
   };
 
+  const inspirationalMessage = getRandomMessage();
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-full max-w-md space-y-8 p-8">
@@ -72,6 +75,9 @@ export default function LoginPage() {
           <h1 className="text-4xl font-bold">the6connect</h1>
           <p className="mt-2 text-sm text-foreground/60">
             Men's accountability platform
+          </p>
+          <p className="mt-4 text-sm italic text-foreground/60">
+            {inspirationalMessage}
           </p>
         </div>
 
