@@ -148,10 +148,7 @@ export default async function DashboardPage() {
           <h1 className="text-3xl font-bold">
             {profile?.display_name || profile?.full_name || 'Friend'} of The Six
           </h1>
-          <p className="text-foreground/60 mt-2">
-            Here's your overview for the6connect
-          </p>
-          <p className="text-sm italic text-foreground/60 mt-1">
+          <p className="text-sm italic text-foreground/60 mt-2">
             {inspirationalMessage}
           </p>
         </div>
