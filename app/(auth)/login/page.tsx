@@ -6,7 +6,7 @@
  * Simple email/password login for the 4 group members.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { getRandomMessage } from '@/lib/constants/inspirational-messages';
@@ -16,7 +16,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [inspirationalMessage, setInspirationalMessage] = useState('');
   const router = useRouter();
+
+  // Set inspirational message only on client side to avoid hydration mismatch
+  useEffect(() => {
+    setInspirationalMessage(getRandomMessage());
+  }, []);
 
   // Debug: Check environment variables
   console.log('Environment check:', {
@@ -65,8 +71,6 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
-
-  const inspirationalMessage = getRandomMessage();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
