@@ -15,14 +15,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('Starting calendar invite send...');
-    console.log('RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
-    console.log('RESEND_API_KEY length:', process.env.RESEND_API_KEY?.length);
-    console.log('Available env vars:', Object.keys(process.env).filter(k => k.includes('RESEND')));
-
     const resend = new Resend(process.env.RESEND_API_KEY);
     const supabase = await createClient();
-    console.log('Resend and Supabase clients initialized');
 
     const {
       data: { user },
@@ -93,7 +87,6 @@ export async function POST(
     const icsBase64 = Buffer.from(icsContent).toString('base64');
 
     // Send email to each recipient
-    console.log('Sending emails to:', recipientsToSend.map(r => r.email));
     const emailPromises = recipientsToSend.map(async (recipient) => {
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -139,16 +132,14 @@ export async function POST(
     });
 
     // Wait for all emails to send
-    console.log('Waiting for emails to send...');
     const results = await Promise.allSettled(emailPromises);
-    console.log('Email results:', results);
 
     // Check if any failed
     const failures = results.filter((r) => r.status === 'rejected');
     if (failures.length > 0) {
       console.error('Some emails failed to send:', failures);
       return NextResponse.json(
-        { error: `Failed to send ${failures.length} emails`, failures },
+        { error: `Failed to send ${failures.length} emails` },
         { status: 500 }
       );
     }
@@ -173,9 +164,8 @@ export async function POST(
     });
   } catch (error) {
     console.error('Calendar invite error:', error);
-    console.error('Error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
