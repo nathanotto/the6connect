@@ -57,7 +57,7 @@ export default async function MessagesPage() {
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-2xl">
       <div>
         <h1 className="text-3xl font-bold">Messages</h1>
         <p className="text-foreground/60 mt-2">
@@ -85,10 +85,10 @@ export default async function MessagesPage() {
         </div>
       </div>
 
-      {/* Direct Messages - 3 Columns */}
+      {/* Direct Messages */}
       <div>
         <h2 className="text-xl font-semibold mb-4">Direct Messages</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="space-y-4">
           {usersWithMessages.map((member) => (
             <div
               key={member.id}
