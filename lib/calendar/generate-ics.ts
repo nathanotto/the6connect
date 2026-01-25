@@ -18,15 +18,15 @@ export function generateICS(event: CalendarEvent): string {
   const startDate = new Date(event.startTime);
   const endDate = new Date(startDate.getTime() + event.durationMinutes * 60000);
 
-  // Format dates to ICS format (YYYYMMDDTHHMMSSZ)
+  // Format dates to ICS format (YYYYMMDDTHHMMSS - local time without Z)
   const formatDate = (date: Date): string => {
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(date.getUTCDate()).padStart(2, '0');
-    const hours = String(date.getUTCHours()).padStart(2, '0');
-    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
-    return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}${month}${day}T${hours}${minutes}${seconds}`;
   };
 
   const dtStart = formatDate(startDate);
