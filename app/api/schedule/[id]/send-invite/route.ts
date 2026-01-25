@@ -16,6 +16,10 @@ export async function POST(
 ) {
   try {
     console.log('Starting calendar invite send...');
+    console.log('RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
+    console.log('RESEND_API_KEY length:', process.env.RESEND_API_KEY?.length);
+    console.log('Available env vars:', Object.keys(process.env).filter(k => k.includes('RESEND')));
+
     const resend = new Resend(process.env.RESEND_API_KEY);
     const supabase = await createClient();
     console.log('Resend and Supabase clients initialized');
