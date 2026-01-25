@@ -26,13 +26,13 @@ interface GroupMessageListProps {
 
 export function GroupMessageList({ initialMessages, currentUserId }: GroupMessageListProps) {
   return (
-    <div className="space-y-2 max-w-2xl">
+    <div className="space-y-1.5">
       {initialMessages.length > 0 ? (
         initialMessages.map((message) => {
           return (
             <div
               key={message.id}
-              className="border border-foreground/20 rounded p-2"
+              className="border border-foreground/20 rounded p-1.5"
             >
               <div className="flex items-start gap-2">
                 <div className="flex-1 min-w-0">
@@ -44,7 +44,7 @@ export function GroupMessageList({ initialMessages, currentUserId }: GroupMessag
                       {format(new Date(message.created_at), 'MMM d, h:mm a')}
                     </span>
                   </div>
-                  <p className="text-sm text-foreground/80 whitespace-pre-wrap">
+                  <p className="text-xs text-foreground/80 whitespace-pre-wrap">
                     {message.content}
                   </p>
                 </div>
@@ -53,7 +53,7 @@ export function GroupMessageList({ initialMessages, currentUserId }: GroupMessag
           );
         })
       ) : (
-        <p className="text-sm text-foreground/60 text-center py-4">
+        <p className="text-xs text-foreground/60 text-center py-3">
           No group messages yet. Be the first to post!
         </p>
       )}

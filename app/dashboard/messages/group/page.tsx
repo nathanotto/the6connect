@@ -31,7 +31,7 @@ export default async function GroupMessagesPage() {
     .limit(50);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-2xl">
       <div>
         <Link
           href="/dashboard/messages"
@@ -46,14 +46,14 @@ export default async function GroupMessagesPage() {
       </div>
 
       {/* Message Form */}
-      <div className="border border-foreground/20 rounded-lg p-4">
-        <h2 className="text-sm font-semibold mb-3">Write a Message</h2>
+      <div className="border border-foreground/20 rounded-lg p-3">
+        <h2 className="text-xs font-semibold mb-2">Write a Message</h2>
         <GroupMessageForm />
       </div>
 
       {/* All Messages */}
-      <div className="border border-foreground/20 rounded-lg p-4">
-        <h2 className="text-lg font-semibold mb-4">All Messages</h2>
+      <div className="border border-foreground/20 rounded-lg p-3">
+        <h2 className="text-sm font-semibold mb-3">All Messages</h2>
         <GroupMessageList
           initialMessages={groupMessages || []}
           currentUserId={user.id}

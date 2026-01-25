@@ -51,9 +51,9 @@ export function GroupMessageForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
+    <form onSubmit={handleSubmit} className="space-y-1.5">
       {error && (
-        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-2 py-1 rounded text-xs">
+        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-1.5 py-0.5 rounded text-xs">
           {error}
         </div>
       )}
@@ -63,14 +63,14 @@ export function GroupMessageForm() {
           type="text"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="Write to the group..."
-          className="flex-1 px-2 py-1.5 border border-foreground/20 rounded focus:outline-none focus:ring-1 focus:ring-foreground/40 bg-background text-sm"
+          placeholder="Message The Six"
+          className="flex-1 px-2 py-1 border border-foreground/20 rounded focus:outline-none focus:ring-1 focus:ring-foreground/40 bg-background text-xs"
           disabled={loading}
         />
         <button
           type="submit"
           disabled={loading || !content.trim()}
-          className="py-1.5 px-3 bg-foreground text-background font-medium rounded hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-foreground disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
+          className="py-1 px-3 bg-foreground text-background font-medium rounded hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-foreground disabled:opacity-50 disabled:cursor-not-allowed transition text-xs"
         >
           {loading ? '...' : 'Send'}
         </button>
