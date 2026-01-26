@@ -76,13 +76,13 @@ export default async function MessagesPage() {
             View all →
           </Link>
         </div>
+        <div className="mb-4">
+          <GroupMessageForm />
+        </div>
         <GroupMessageList
           initialMessages={groupMessages || []}
           currentUserId={user.id}
         />
-        <div className="mt-4 pt-4 border-t border-foreground/10">
-          <GroupMessageForm />
-        </div>
       </div>
 
       {/* Direct Messages */}
@@ -106,19 +106,19 @@ export default async function MessagesPage() {
                 </Link>
               </div>
 
+              <div className="mb-4">
+                <DMForm
+                  recipientId={member.id}
+                  recipientName={member.display_name || member.full_name}
+                />
+              </div>
+
               <DMPreviewList
                 messages={member.messages}
                 currentUserId={user.id}
                 otherUserId={member.id}
                 otherUserName={member.display_name || member.full_name}
               />
-
-              <div className="mt-4 pt-4 border-t border-foreground/10">
-                <DMForm
-                  recipientId={member.id}
-                  recipientName={member.display_name || member.full_name}
-                />
-              </div>
             </div>
           ))}
         </div>

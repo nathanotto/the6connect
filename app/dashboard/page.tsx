@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { getRandomMessage } from '@/lib/constants/inspirational-messages';
+import { GroupMessageForm } from '@/components/messages/group-message-form';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -159,6 +160,9 @@ export default async function DashboardPage() {
         {/* Recent Messages */}
         <div className="border border-foreground/20 rounded-lg p-6">
           <h3 className="font-semibold mb-3">Recent Messages</h3>
+          <div className="mb-4">
+            <GroupMessageForm />
+          </div>
           {allMessages && allMessages.length > 0 ? (
             <>
               <div className="space-y-2 mb-3">
