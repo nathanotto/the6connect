@@ -52,7 +52,7 @@ export function Sidebar({ user, profile }: SidebarProps) {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-foreground text-background"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-red-600 text-white"
         aria-label="Toggle menu"
       >
         {isMobileMenuOpen ? (
@@ -79,7 +79,7 @@ export function Sidebar({ user, profile }: SidebarProps) {
         className={`
           fixed md:relative
           inset-y-0 left-0
-          w-64 bg-foreground text-background p-6 flex flex-col
+          w-64 bg-red-600 text-white p-6 flex flex-col
           z-40
           transform transition-transform duration-300 ease-in-out
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -104,8 +104,8 @@ export function Sidebar({ user, profile }: SidebarProps) {
                 onClick={closeMobileMenu}
                 className={`block px-4 py-2 rounded-lg transition ${
                   isActive
-                    ? 'bg-background text-foreground'
-                    : 'hover:bg-background/10'
+                    ? 'bg-white text-red-600'
+                    : 'hover:bg-red-700'
                 }`}
               >
                 {item.name}
@@ -114,24 +114,24 @@ export function Sidebar({ user, profile }: SidebarProps) {
           })}
         </nav>
 
-        <div className="border-t border-background/20 pt-4 space-y-2">
+        <div className="border-t border-white/20 pt-4 space-y-2">
           <Link
             href={`/dashboard/profile/${user.id}`}
             onClick={closeMobileMenu}
-            className="block px-4 py-2 rounded-lg hover:bg-background/10 transition"
+            className="block px-4 py-2 rounded-lg hover:bg-red-700 transition"
           >
             {profile?.display_name || profile?.full_name || 'Profile'}
           </Link>
           <Link
             href="/dashboard/settings"
             onClick={closeMobileMenu}
-            className="block px-4 py-2 rounded-lg hover:bg-background/10 transition"
+            className="block px-4 py-2 rounded-lg hover:bg-red-700 transition"
           >
             ⚙️ Settings
           </Link>
           <button
             onClick={handleSignOut}
-            className="w-full text-left px-4 py-2 rounded-lg hover:bg-background/10 transition"
+            className="w-full text-left px-4 py-2 rounded-lg hover:bg-red-700 transition"
           >
             Sign Out
           </button>
