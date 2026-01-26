@@ -179,12 +179,15 @@ export default async function NinetyDayGamePage() {
             {new Date(currentGame.start_date).toLocaleDateString()} - {new Date(currentGame.end_date).toLocaleDateString()} • {currentGame.status.toUpperCase()}
           </p>
         </div>
-        <Link
-          href="/dashboard/90-day-game/history"
-          className="text-sm text-foreground/60 hover:text-foreground"
-        >
-          View History →
-        </Link>
+        <div className="flex items-center gap-3">
+          {currentGame.status === 'completed' && <CreateGameButton />}
+          <Link
+            href="/dashboard/90-day-game/history"
+            className="text-sm text-foreground/60 hover:text-foreground"
+          >
+            View History →
+          </Link>
+        </div>
       </div>
 
       {/* Participant Cards */}
