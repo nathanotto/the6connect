@@ -44,6 +44,7 @@ export function Sidebar({ user, profile }: SidebarProps) {
     { name: 'Questions', href: '/dashboard/questions', icon: 'HelpCircle' },
     { name: 'The Six Pics', href: '/dashboard/photos', icon: 'Image' },
     { name: 'Schedule', href: '/dashboard/schedule', icon: 'Calendar' },
+    { name: '90-Day Game', href: '/dashboard/90-day-game', icon: 'Target' },
   ];
 
   return (
