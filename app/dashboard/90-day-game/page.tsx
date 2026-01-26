@@ -6,6 +6,8 @@
 
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
+import { CreateGameButton } from './create-game';
+import { SetupView } from './setup-view';
 
 // Score calculation functions
 function calculateWeightedScore(items: Array<{ weight_percentage: number; completion_percentage: number }>) {
@@ -43,36 +45,51 @@ export default async function NinetyDayGamePage() {
     return null;
   }
 
-  // Fetch most recent game (active or completed)
-  const { data: activeGame } = await supabase
+  // Fetch most recent game (including setup)
+  const { data: currentGame } = await supabase
     .from('games')
     .select('*')
-    .in('status', ['active', 'completed'])
     .order('created_at', { ascending: false })
     .limit(1)
     .single();
 
-  // If no game at all, show setup prompt
-  if (!activeGame) {
+  // If no game at all, show create prompt
+  if (!currentGame) {
     return (
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">90-Day Game</h1>
-          <p className="text-foreground/60 mt-2">
-            Track your 90-day accountability games with The Six
-          </p>
+          <p className="text-foreground/60 mt-2">Track your 90-day accountability games with The Six</p>
         </div>
 
         <div className="border border-foreground/20 rounded-lg p-12 text-center">
           <h2 className="text-2xl font-bold mb-4">No Game Found</h2>
-          <p className="text-foreground/60 mb-6">
-            Create a new 90-day game to get started
-          </p>
-          <button className="px-6 py-3 bg-foreground text-background font-medium rounded-lg hover:opacity-90">
-            Create New Game
-          </button>
+          <p className="text-foreground/60 mb-6">Create a new 90-day game to get started</p>
+          <CreateGameButton />
         </div>
       </div>
+    );
+  }
+
+  // If game is in setup mode, show setup view
+  if (currentGame.status === 'setup') {
+    const { data: participants } = await supabase
+      .from('game_participants')
+      .select(`
+        *,
+        user:users(id, full_name, display_name)
+      `)
+      .eq('game_id', currentGame.id)
+      .order('user_id');
+
+    return (
+      <SetupView
+        gameId={currentGame.id}
+        startDate={currentGame.start_date}
+        endDate={currentGame.end_date}
+        currentUserId={user.id}
+        participants={participants || []}
+      />
     );
   }
 
@@ -83,7 +100,7 @@ export default async function NinetyDayGamePage() {
       *,
       user:users(id, full_name, display_name)
     `)
-    .eq('game_id', activeGame.id)
+    .eq('game_id', currentGame.id)
     .eq('opted_in', true);
 
   // Fetch all game data for score calculations
@@ -95,40 +112,40 @@ export default async function NinetyDayGamePage() {
         supabase
           .from('game_vision_statements')
           .select('completion_percentage')
-          .eq('game_id', activeGame.id)
+          .eq('game_id', currentGame.id)
           .eq('user_id', userId)
           .single(),
         supabase
           .from('game_why_statements')
           .select('completion_percentage')
-          .eq('game_id', activeGame.id)
+          .eq('game_id', currentGame.id)
           .eq('user_id', userId)
           .single(),
         supabase
           .from('game_objectives')
           .select('completion_percentage')
-          .eq('game_id', activeGame.id)
+          .eq('game_id', currentGame.id)
           .eq('user_id', userId)
           .single(),
         supabase
           .from('game_key_results')
           .select('weight_percentage, completion_percentage')
-          .eq('game_id', activeGame.id)
+          .eq('game_id', currentGame.id)
           .eq('user_id', userId),
         supabase
           .from('game_projects')
           .select('weight_percentage, completion_percentage')
-          .eq('game_id', activeGame.id)
+          .eq('game_id', currentGame.id)
           .eq('user_id', userId),
         supabase
           .from('game_inner_game_items')
           .select('rating')
-          .eq('game_id', activeGame.id)
+          .eq('game_id', currentGame.id)
           .eq('user_id', userId),
         supabase
           .from('game_one_big_things')
           .select('completion_percentage')
-          .eq('game_id', activeGame.id)
+          .eq('game_id', currentGame.id)
           .eq('user_id', userId),
       ]);
 
@@ -158,7 +175,7 @@ export default async function NinetyDayGamePage() {
       <div>
         <h1 className="text-3xl font-bold">The Six 90-Day Game</h1>
         <p className="text-foreground/60 mt-2">
-          {new Date(activeGame.start_date).toLocaleDateString()} - {new Date(activeGame.end_date).toLocaleDateString()} • {activeGame.status.toUpperCase()}
+          {new Date(currentGame.start_date).toLocaleDateString()} - {new Date(currentGame.end_date).toLocaleDateString()} • {currentGame.status.toUpperCase()}
         </p>
       </div>
 
