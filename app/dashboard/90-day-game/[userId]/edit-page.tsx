@@ -229,21 +229,21 @@ export function EditableGameDetail({
         <Link href="/dashboard/90-day-game" className="text-sm text-foreground/60 hover:text-foreground mb-2 block">
           ← Back to Overview
         </Link>
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-2xl md:text-3xl font-bold">
               {participant.user.display_name || participant.user.full_name}
             </h1>
             {participant.game_name && (
-              <p className="text-xl text-foreground/60 mt-1">"{participant.game_name}"</p>
+              <p className="text-lg md:text-xl text-foreground/60 mt-1">"{participant.game_name}"</p>
             )}
-            <p className="text-sm text-foreground/60 mt-2">
+            <p className="text-xs md:text-sm text-foreground/60 mt-2">
               {new Date(startDate).toLocaleDateString()} - {new Date(endDate).toLocaleDateString()} •{' '}
               {gameStatus.toUpperCase()}
             </p>
           </div>
-          <div className="text-right">
-            <div className="text-5xl font-bold">{overallScore}%</div>
+          <div className="text-left md:text-right">
+            <div className="text-4xl md:text-5xl font-bold">{overallScore}%</div>
             <p className="text-sm text-foreground/60 mt-1">Overall Completion</p>
             {saving && <p className="text-xs text-foreground/40 mt-1">Saving...</p>}
           </div>
@@ -258,9 +258,9 @@ export function EditableGameDetail({
       )}
 
       {/* Vision Statement */}
-      <div className="border border-foreground/20 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Vision Statement</h2>
+      <div className="border border-foreground/20 rounded-lg p-4 md:p-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <h2 className="text-lg md:text-xl font-semibold">Vision Statement</h2>
           <input
             type="number"
             min="0"
@@ -272,7 +272,7 @@ export function EditableGameDetail({
             }}
             onBlur={(e) => saveVision(vision?.content || '', parseInt(e.target.value) || 0)}
             disabled={!isOwnGame}
-            className="w-16 text-lg font-bold text-right bg-transparent border border-foreground/20 rounded px-2 py-1 disabled:opacity-50"
+            className="w-14 md:w-16 text-base md:text-lg font-bold text-right bg-transparent border border-foreground/20 rounded px-2 py-1 disabled:opacity-50 min-h-[44px]"
           />
         </div>
         <textarea
@@ -286,9 +286,9 @@ export function EditableGameDetail({
       </div>
 
       {/* Why Statement */}
-      <div className="border border-foreground/20 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Why</h2>
+      <div className="border border-foreground/20 rounded-lg p-4 md:p-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <h2 className="text-lg md:text-xl font-semibold">Why</h2>
           <input
             type="number"
             min="0"
@@ -300,7 +300,7 @@ export function EditableGameDetail({
             }}
             onBlur={(e) => saveWhy(why?.content || '', parseInt(e.target.value) || 0)}
             disabled={!isOwnGame}
-            className="w-16 text-lg font-bold text-right bg-transparent border border-foreground/20 rounded px-2 py-1 disabled:opacity-50"
+            className="w-14 md:w-16 text-base md:text-lg font-bold text-right bg-transparent border border-foreground/20 rounded px-2 py-1 disabled:opacity-50 min-h-[44px]"
           />
         </div>
         <textarea
@@ -314,9 +314,9 @@ export function EditableGameDetail({
       </div>
 
       {/* Objective */}
-      <div className="border border-foreground/20 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Objective</h2>
+      <div className="border border-foreground/20 rounded-lg p-4 md:p-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <h2 className="text-lg md:text-xl font-semibold">Objective</h2>
           <input
             type="number"
             min="0"
@@ -328,7 +328,7 @@ export function EditableGameDetail({
             }}
             onBlur={(e) => saveObjective(objective?.content || '', parseInt(e.target.value) || 0)}
             disabled={!isOwnGame}
-            className="w-16 text-lg font-bold text-right bg-transparent border border-foreground/20 rounded px-2 py-1 disabled:opacity-50"
+            className="w-14 md:w-16 text-base md:text-lg font-bold text-right bg-transparent border border-foreground/20 rounded px-2 py-1 disabled:opacity-50 min-h-[44px]"
           />
         </div>
         <textarea
@@ -342,10 +342,10 @@ export function EditableGameDetail({
       </div>
 
       {/* Key Results */}
-      <div className="border border-foreground/20 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Key Results</h2>
-          <span className="text-lg font-bold">{keyResultsScore}%</span>
+      <div className="border border-foreground/20 rounded-lg p-4 md:p-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <h2 className="text-lg md:text-xl font-semibold">Key Results</h2>
+          <span className="text-base md:text-lg font-bold">{keyResultsScore}%</span>
         </div>
         <div className="space-y-3">
           {keyResults?.map((kr) => (
@@ -357,12 +357,12 @@ export function EditableGameDetail({
                 }}
                 onBlur={() => saveKeyResult(kr)}
                 disabled={!isOwnGame}
-                className="w-full text-sm bg-transparent mb-2 border border-foreground/10 rounded p-2 disabled:opacity-50 disabled:border-transparent"
+                className="w-full text-sm bg-transparent mb-2 border border-foreground/10 rounded p-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
                 rows={2}
               />
-              <div className="flex items-center gap-3 text-sm">
-                <label className="flex items-center gap-2">
-                  Weight:
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3 text-sm">
+                <label className="flex items-center gap-2 min-h-[44px]">
+                  <span className="text-xs md:text-sm">Weight:</span>
                   <input
                     type="number"
                     min="0"
@@ -374,12 +374,12 @@ export function EditableGameDetail({
                     }}
                     onBlur={() => saveKeyResult(kr)}
                     disabled={!isOwnGame}
-                    className="w-14 text-right bg-transparent border border-foreground/20 rounded px-1 disabled:opacity-50"
+                    className="w-16 text-right bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50"
                   />
-                  %
+                  <span>%</span>
                 </label>
-                <label className="flex items-center gap-2">
-                  Completion:
+                <label className="flex items-center gap-2 min-h-[44px]">
+                  <span className="text-xs md:text-sm">Completion:</span>
                   <input
                     type="number"
                     min="0"
@@ -391,9 +391,9 @@ export function EditableGameDetail({
                     }}
                     onBlur={() => saveKeyResult(kr)}
                     disabled={!isOwnGame}
-                    className="w-14 text-right bg-transparent border border-foreground/20 rounded px-1 disabled:opacity-50"
+                    className="w-16 text-right bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50"
                   />
-                  %
+                  <span>%</span>
                 </label>
                 <input
                   type="text"
@@ -404,7 +404,7 @@ export function EditableGameDetail({
                   onBlur={() => saveKeyResult(kr)}
                   disabled={!isOwnGame}
                   placeholder="Notes..."
-                  className="flex-1 text-sm bg-transparent border border-foreground/20 rounded px-2 py-1 disabled:opacity-50 disabled:border-transparent"
+                  className="flex-1 text-sm bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
                 />
               </div>
             </div>
@@ -413,10 +413,10 @@ export function EditableGameDetail({
       </div>
 
       {/* Projects */}
-      <div className="border border-foreground/20 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Projects</h2>
-          <span className="text-lg font-bold">{projectsScore}%</span>
+      <div className="border border-foreground/20 rounded-lg p-4 md:p-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <h2 className="text-lg md:text-xl font-semibold">Projects</h2>
+          <span className="text-base md:text-lg font-bold">{projectsScore}%</span>
         </div>
         <div className="space-y-3">
           {projects?.map((project) => (
@@ -430,12 +430,12 @@ export function EditableGameDetail({
                 }}
                 onBlur={() => saveProject(project)}
                 disabled={!isOwnGame}
-                className="w-full text-sm bg-transparent mb-2 border border-foreground/10 rounded p-2 disabled:opacity-50 disabled:border-transparent"
+                className="w-full text-sm bg-transparent mb-2 border border-foreground/10 rounded p-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
                 rows={3}
               />
-              <div className="flex items-center gap-3 text-sm">
-                <label className="flex items-center gap-2">
-                  Weight:
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3 text-sm">
+                <label className="flex items-center gap-2 min-h-[44px]">
+                  <span className="text-xs md:text-sm">Weight:</span>
                   <input
                     type="number"
                     min="0"
@@ -447,12 +447,12 @@ export function EditableGameDetail({
                     }}
                     onBlur={() => saveProject(project)}
                     disabled={!isOwnGame}
-                    className="w-14 text-right bg-transparent border border-foreground/20 rounded px-1 disabled:opacity-50"
+                    className="w-16 text-right bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50"
                   />
-                  %
+                  <span>%</span>
                 </label>
-                <label className="flex items-center gap-2">
-                  Completion:
+                <label className="flex items-center gap-2 min-h-[44px]">
+                  <span className="text-xs md:text-sm">Completion:</span>
                   <input
                     type="number"
                     min="0"
@@ -464,9 +464,9 @@ export function EditableGameDetail({
                     }}
                     onBlur={() => saveProject(project)}
                     disabled={!isOwnGame}
-                    className="w-14 text-right bg-transparent border border-foreground/20 rounded px-1 disabled:opacity-50"
+                    className="w-16 text-right bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50"
                   />
-                  %
+                  <span>%</span>
                 </label>
                 <input
                   type="text"
@@ -477,7 +477,7 @@ export function EditableGameDetail({
                   onBlur={() => saveProject(project)}
                   disabled={!isOwnGame}
                   placeholder="Notes..."
-                  className="flex-1 text-sm bg-transparent border border-foreground/20 rounded px-2 py-1 disabled:opacity-50 disabled:border-transparent"
+                  className="flex-1 text-sm bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
                 />
               </div>
             </div>
@@ -486,81 +486,89 @@ export function EditableGameDetail({
       </div>
 
       {/* Inner Game - simplified inline editing */}
-      <div className="border border-foreground/20 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold">Inner Game</h2>
-          <span className="text-lg font-bold">{innerGameScore}%</span>
+      <div className="border border-foreground/20 rounded-lg p-4 md:p-6">
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <h2 className="text-lg md:text-xl font-semibold">Inner Game</h2>
+          <span className="text-base md:text-lg font-bold">{innerGameScore}%</span>
         </div>
 
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-red-500/80 mb-3">Performance Limiting Box</h3>
+          <h3 className="text-base md:text-lg font-semibold text-red-500/80 mb-3">Performance Limiting Box</h3>
           <div className="space-y-2">
             {innerGameLimiting?.map((item) => (
-              <div key={item.id} className="bg-red-500/5 border border-red-500/20 rounded p-2 flex items-center gap-3">
-                <span className="text-xs font-semibold text-red-500/80 uppercase w-24 shrink-0">{item.category}</span>
-                <input
-                  type="text"
-                  value={item.description}
-                  onChange={(e) => {
-                    setInnerGameLimiting(
-                      innerGameLimiting.map((i) => (i.id === item.id ? { ...i, description: e.target.value } : i))
-                    );
-                  }}
-                  onBlur={() => saveInnerGame(item)}
-                  disabled={!isOwnGame}
-                  className="flex-1 text-sm bg-transparent border border-foreground/10 rounded px-2 py-1 disabled:opacity-50 disabled:border-transparent"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="5"
-                  value={item.rating}
-                  onChange={(e) => {
-                    const updated = { ...item, rating: parseInt(e.target.value) || 1 };
-                    setInnerGameLimiting(innerGameLimiting.map((i) => (i.id === item.id ? updated : i)));
-                  }}
-                  onBlur={() => saveInnerGame(item)}
-                  disabled={!isOwnGame}
-                  className="w-12 text-center font-bold bg-transparent border border-foreground/20 rounded px-1 disabled:opacity-50"
-                />
-                <span className="text-sm">/5</span>
+              <div key={item.id} className="bg-red-500/5 border border-red-500/20 rounded p-3">
+                <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
+                  <span className="text-xs font-semibold text-red-500/80 uppercase md:w-24 md:shrink-0">{item.category}</span>
+                  <input
+                    type="text"
+                    value={item.description}
+                    onChange={(e) => {
+                      setInnerGameLimiting(
+                        innerGameLimiting.map((i) => (i.id === item.id ? { ...i, description: e.target.value } : i))
+                      );
+                    }}
+                    onBlur={() => saveInnerGame(item)}
+                    disabled={!isOwnGame}
+                    className="flex-1 text-sm bg-transparent border border-foreground/10 rounded px-2 py-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
+                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="1"
+                      max="5"
+                      value={item.rating}
+                      onChange={(e) => {
+                        const updated = { ...item, rating: parseInt(e.target.value) || 1 };
+                        setInnerGameLimiting(innerGameLimiting.map((i) => (i.id === item.id ? updated : i)));
+                      }}
+                      onBlur={() => saveInnerGame(item)}
+                      disabled={!isOwnGame}
+                      className="w-14 text-center font-bold bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50"
+                    />
+                    <span className="text-sm">/5</span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold text-green-500/80 mb-3">Performance Empowering Platform</h3>
+          <h3 className="text-base md:text-lg font-semibold text-green-500/80 mb-3">Performance Empowering Platform</h3>
           <div className="space-y-2">
             {innerGameEmpowering?.map((item) => (
-              <div key={item.id} className="bg-green-500/5 border border-green-500/20 rounded p-2 flex items-center gap-3">
-                <span className="text-xs font-semibold text-green-500/80 uppercase w-24 shrink-0">{item.category}</span>
-                <input
-                  type="text"
-                  value={item.description}
-                  onChange={(e) => {
-                    setInnerGameEmpowering(
-                      innerGameEmpowering.map((i) => (i.id === item.id ? { ...i, description: e.target.value } : i))
-                    );
-                  }}
-                  onBlur={() => saveInnerGame(item)}
-                  disabled={!isOwnGame}
-                  className="flex-1 text-sm bg-transparent border border-foreground/10 rounded px-2 py-1 disabled:opacity-50 disabled:border-transparent"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="5"
-                  value={item.rating}
-                  onChange={(e) => {
-                    const updated = { ...item, rating: parseInt(e.target.value) || 1 };
-                    setInnerGameEmpowering(innerGameEmpowering.map((i) => (i.id === item.id ? updated : i)));
-                  }}
-                  onBlur={() => saveInnerGame(item)}
-                  disabled={!isOwnGame}
-                  className="w-12 text-center font-bold bg-transparent border border-foreground/20 rounded px-1 disabled:opacity-50"
-                />
-                <span className="text-sm">/5</span>
+              <div key={item.id} className="bg-green-500/5 border border-green-500/20 rounded p-3">
+                <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
+                  <span className="text-xs font-semibold text-green-500/80 uppercase md:w-24 md:shrink-0">{item.category}</span>
+                  <input
+                    type="text"
+                    value={item.description}
+                    onChange={(e) => {
+                      setInnerGameEmpowering(
+                        innerGameEmpowering.map((i) => (i.id === item.id ? { ...i, description: e.target.value } : i))
+                      );
+                    }}
+                    onBlur={() => saveInnerGame(item)}
+                    disabled={!isOwnGame}
+                    className="flex-1 text-sm bg-transparent border border-foreground/10 rounded px-2 py-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
+                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="1"
+                      max="5"
+                      value={item.rating}
+                      onChange={(e) => {
+                        const updated = { ...item, rating: parseInt(e.target.value) || 1 };
+                        setInnerGameEmpowering(innerGameEmpowering.map((i) => (i.id === item.id ? updated : i)));
+                      }}
+                      onBlur={() => saveInnerGame(item)}
+                      disabled={!isOwnGame}
+                      className="w-14 text-center font-bold bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50"
+                    />
+                    <span className="text-sm">/5</span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -568,10 +576,10 @@ export function EditableGameDetail({
       </div>
 
       {/* One Big Things */}
-      <div className="border border-foreground/20 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Bi-Weekly One Big Things</h2>
-          <span className="text-lg font-bold">{obtsScore}%</span>
+      <div className="border border-foreground/20 rounded-lg p-4 md:p-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <h2 className="text-lg md:text-xl font-semibold">Bi-Weekly One Big Things</h2>
+          <span className="text-base md:text-lg font-bold">{obtsScore}%</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {obts?.map((obt) => (
@@ -591,7 +599,7 @@ export function EditableGameDetail({
                     saveOBT(updated);
                   }}
                   disabled={!isOwnGame}
-                  className="text-sm font-bold bg-transparent border border-foreground/20 rounded px-2 py-1 disabled:opacity-50"
+                  className="text-sm font-bold bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50 min-h-[44px]"
                 >
                   <option value="0">0%</option>
                   <option value="100">100%</option>
@@ -605,7 +613,7 @@ export function EditableGameDetail({
                 onBlur={() => saveOBT(obt)}
                 disabled={!isOwnGame}
                 placeholder="What's your One Big Thing for this bi-week?"
-                className="w-full text-sm bg-transparent border border-foreground/10 rounded p-2 mb-2 disabled:opacity-50 disabled:border-transparent"
+                className="w-full text-sm bg-transparent border border-foreground/10 rounded p-2 mb-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
                 rows={2}
               />
               <input
@@ -617,7 +625,7 @@ export function EditableGameDetail({
                 onBlur={() => saveOBT(obt)}
                 disabled={!isOwnGame}
                 placeholder="Notes..."
-                className="w-full text-xs text-foreground/60 bg-transparent border border-foreground/10 rounded px-2 py-1 disabled:opacity-50 disabled:border-transparent"
+                className="w-full text-xs text-foreground/60 bg-transparent border border-foreground/10 rounded px-2 py-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
               />
             </div>
           ))}
