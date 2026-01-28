@@ -110,8 +110,8 @@ export function Sidebar({ user, profile }: SidebarProps) {
                 onClick={closeMobileMenu}
                 className={`block px-4 py-2 rounded-lg transition ${
                   isActive
-                    ? 'bg-background text-foreground'
-                    : 'hover:bg-background/10'
+                    ? 'bg-background text-red-600'
+                    : 'text-red-600 hover:bg-background/10'
                 }`}
               >
                 {item.name}
@@ -124,20 +124,20 @@ export function Sidebar({ user, profile }: SidebarProps) {
           <Link
             href={`/dashboard/profile/${user.id}`}
             onClick={closeMobileMenu}
-            className="block px-4 py-2 rounded-lg hover:bg-background/10 transition"
+            className="block px-4 py-2 rounded-lg hover:bg-background/10 transition text-red-600"
           >
             {profile?.display_name || profile?.full_name || 'Profile'}
           </Link>
           <Link
             href="/dashboard/settings"
             onClick={closeMobileMenu}
-            className="block px-4 py-2 rounded-lg hover:bg-background/10 transition"
+            className="block px-4 py-2 rounded-lg hover:bg-background/10 transition text-red-600"
           >
             ⚙️ Settings
           </Link>
           <button
             onClick={handleSignOut}
-            className="w-full text-left px-4 py-2 rounded-lg hover:bg-background/10 transition"
+            className="w-full text-left px-4 py-2 rounded-lg hover:bg-background/10 transition text-red-600"
           >
             Sign Out
           </button>
