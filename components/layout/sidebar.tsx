@@ -7,10 +7,11 @@
  * Responsive: Hamburger menu on mobile, persistent sidebar on desktop.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { getRandomMessage } from '@/lib/constants/inspirational-messages';
 import type { User } from '@supabase/supabase-js';
 
 interface SidebarProps {
@@ -23,9 +24,14 @@ interface SidebarProps {
 
 export function Sidebar({ user, profile }: SidebarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [inspirationalMessage, setInspirationalMessage] = useState('');
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+
+  useEffect(() => {
+    setInspirationalMessage(getRandomMessage());
+  }, []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -38,12 +44,12 @@ export function Sidebar({ user, profile }: SidebarProps) {
   };
 
   const navigation = [
-    { name: 'Overview', href: '/dashboard', icon: 'Home' },
+    { name: 'Home', href: '/dashboard', icon: 'Home' },
     { name: 'Messages', href: '/dashboard/messages', icon: 'MessageSquare' },
-    { name: 'Life Status', href: '/dashboard/life-status', icon: 'Activity' },
+    { name: 'Check-ins', href: '/dashboard/life-status', icon: 'Activity' },
     { name: 'Questions', href: '/dashboard/questions', icon: 'HelpCircle' },
     { name: 'The Six Pics', href: '/dashboard/photos', icon: 'Image' },
-    { name: 'Schedule', href: '/dashboard/schedule', icon: 'Calendar' },
+    { name: 'Meetings', href: '/dashboard/schedule', icon: 'Calendar' },
     { name: '90-Day Game', href: '/dashboard/90-day-game', icon: 'Target' },
   ];
 
@@ -88,7 +94,7 @@ export function Sidebar({ user, profile }: SidebarProps) {
       >
         <div className="mb-8">
           <h1 className="text-2xl font-bold">the6connect</h1>
-          <p className="text-sm opacity-60 mt-1">Men's Accountability</p>
+          <p className="text-sm opacity-60 mt-1 italic">{inspirationalMessage}</p>
         </div>
 
         <nav className="flex-1 space-y-1">

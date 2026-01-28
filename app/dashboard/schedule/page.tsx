@@ -64,7 +64,7 @@ export default async function SchedulePage() {
         {upcomingEvents && upcomingEvents.length > 0 ? (
           <div className="space-y-3">
             {upcomingEvents.map((event) => (
-              <EventCard key={event.id} event={event} totalUsers={totalUsers || 4} />
+              <EventCard key={event.id} event={event} totalUsers={totalUsers || 4} currentUserId={user.id} />
             ))}
           </div>
         ) : (
@@ -82,7 +82,7 @@ export default async function SchedulePage() {
           <h2 className="text-xl font-semibold mb-4">Past Events</h2>
           <div className="space-y-3">
             {pastEvents.map((event) => (
-              <EventCard key={event.id} event={event} totalUsers={totalUsers || 4} />
+              <EventCard key={event.id} event={event} totalUsers={totalUsers || 4} currentUserId={user.id} />
             ))}
           </div>
         </div>

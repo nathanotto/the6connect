@@ -38,16 +38,19 @@ export default async function ProfilePage({
     );
   }
 
-  // Fetch recent life status updates
-  const { data: recentStatuses } = await supabase
+  // Fetch recent check-ins
+  const { data: recentCheckins } = await supabase
     .from('life_status_updates')
-    .select(`
-      *,
-      life_area:life_areas(*)
-    `)
+    .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(5);
+
+  // Fetch life areas for zone display
+  const { data: lifeAreas } = await supabase
+    .from('life_areas')
+    .select('*')
+    .order('sort_order', { ascending: true });
 
   const isOwnProfile = currentUser.id === userId;
 
@@ -74,53 +77,71 @@ export default async function ProfilePage({
         </div>
       </div>
 
-      {/* Recent Life Status Updates */}
-      {recentStatuses && recentStatuses.length > 0 ? (
+      {/* Recent Check-ins */}
+      {recentCheckins && recentCheckins.length > 0 ? (
         <div>
-          <h2 className="text-xl font-semibold mb-4">Recent Life Updates</h2>
+          <h2 className="text-xl font-semibold mb-4">Check-ins</h2>
           <div className="space-y-3">
-            {recentStatuses.map((update: any) => (
-              <div
-                key={update.id}
-                className="border border-foreground/20 rounded-lg p-4"
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-medium">{update.life_area.name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span
-                        className={`px-2 py-0.5 rounded text-xs font-medium ${
-                          update.status === 'thriving'
-                            ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                            : update.status === 'maintaining'
-                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-                            : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
-                        }`}
-                      >
-                        {update.status}
-                      </span>
-                      <span className="text-xs text-foreground/60">
-                        Mood: {update.mood_rating}/10
-                      </span>
+            {recentCheckins.map((checkin: any) => {
+              // Get zone names
+              let zoneNames = 'No zones';
+              if (checkin.zone_ids && Array.isArray(checkin.zone_ids)) {
+                zoneNames = checkin.zone_ids
+                  .map((zoneId: string) => {
+                    const area = lifeAreas?.find((a: any) => a.id === zoneId);
+                    if (area?.name === 'Other' && checkin.zone_other) {
+                      return checkin.zone_other;
+                    }
+                    return area?.name;
+                  })
+                  .filter(Boolean)
+                  .join(', ');
+              }
+
+              return (
+                <div
+                  key={checkin.id}
+                  className="border border-foreground/20 rounded-lg p-4"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm text-foreground/60 mb-2">
+                        <span className="font-medium">Zones:</span> {zoneNames}
+                      </p>
+                      <div className="space-y-1">
+                        <p className="text-sm">
+                          <span className="text-foreground/60">Feeling: </span>
+                          <span className="font-medium">
+                            {checkin.status}
+                            {checkin.status_other && ` (${checkin.status_other})`}
+                          </span>
+                        </p>
+                        <p className="text-sm">
+                          <span className="text-foreground/60">Needs: </span>
+                          <span>
+                            {checkin.support_type === 'Other' ? checkin.support_type_other : checkin.support_type}
+                          </span>
+                        </p>
+                      </div>
+                      {checkin.notes && (
+                        <p className="text-sm mt-2 text-foreground/80">{checkin.notes}</p>
+                      )}
                     </div>
-                    {update.notes && (
-                      <p className="text-sm mt-2 text-foreground/80">{update.notes}</p>
-                    )}
+                    <span className="text-xs text-foreground/60 ml-4">
+                      {format(new Date(checkin.created_at), 'MMM d, h:mm a')}
+                    </span>
                   </div>
-                  <span className="text-xs text-foreground/60">
-                    {format(new Date(update.created_at), 'MMM d')}
-                  </span>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ) : (
         <div className="border border-foreground/20 rounded-lg p-8 text-center">
           <p className="text-foreground/60">
             {isOwnProfile
-              ? 'You have no recent life updates.'
-              : `${profile.display_name || profile.full_name} has no recent life updates.`}
+              ? 'You have no check-ins yet.'
+              : `${profile.display_name || profile.full_name} has no check-ins yet.`}
           </p>
         </div>
       )}

@@ -6,7 +6,7 @@
  * Form for posting to group chat
  */
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export function GroupMessageForm() {
@@ -14,6 +14,16 @@ export function GroupMessageForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [content, setContent] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize textarea as content changes
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  }, [content]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,12 +69,13 @@ export function GroupMessageForm() {
       )}
 
       <div className="flex gap-2">
-        <input
-          type="text"
+        <textarea
+          ref={textareaRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Message The Six"
-          className="flex-1 px-2 py-1 border border-foreground/20 rounded focus:outline-none focus:ring-1 focus:ring-foreground/40 bg-background text-xs"
+          rows={3}
+          className="flex-1 px-2 py-1 border border-foreground/20 rounded focus:outline-none focus:ring-1 focus:ring-foreground/40 bg-background text-xs resize-none"
           disabled={loading}
         />
         <button

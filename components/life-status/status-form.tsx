@@ -1,9 +1,9 @@
 'use client';
 
 /**
- * Life Status Update Form
+ * Check-in Form
  *
- * Form for creating/updating life status across different areas
+ * Form for creating check-ins across different zones
  */
 
 import { useState } from 'react';
@@ -25,14 +25,30 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    life_area_id: '',
-    status: '',
-    mood_rating: 5,
+    zone_ids: [] as string[],
+    zone_other: '',
+    statuses: [] as string[],
+    status_other: '',
+    support_type: '',
+    support_type_other: '',
     notes: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate at least one zone is selected
+    if (formData.zone_ids.length === 0) {
+      setError('Please select at least one zone');
+      return;
+    }
+
+    // Validate at least one feeling is selected
+    if (formData.statuses.length === 0) {
+      setError('Please select at least one feeling');
+      return;
+    }
+
     setError('');
     setLoading(true);
 
@@ -48,14 +64,17 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to create update');
+        throw new Error(result.error || 'Failed to create check-in');
       }
 
       // Reset form
       setFormData({
-        life_area_id: '',
-        status: '',
-        mood_rating: 5,
+        zone_ids: [],
+        zone_other: '',
+        statuses: [],
+        status_other: '',
+        support_type: '',
+        support_type_other: '',
         notes: '',
       });
 
@@ -69,89 +88,133 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 max-w-md">
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
       {error && (
         <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-3 py-2 rounded text-sm">
           {error}
         </div>
       )}
 
-      {/* Life Area Selection */}
+      {/* Zone Selection */}
       <div>
-        <label htmlFor="life_area" className="block text-sm font-medium mb-1">
-          Life Area *
+        <label className="block text-sm font-medium mb-2">
+          Zone * (select at least one)
         </label>
-        <select
-          id="life_area"
-          required
-          value={formData.life_area_id}
-          onChange={(e) =>
-            setFormData({ ...formData, life_area_id: e.target.value })
-          }
-          className="w-full px-3 py-1.5 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background text-sm"
-        >
-          <option value="">Select a life area...</option>
+        <div className="flex flex-wrap gap-2">
           {lifeAreas.map((area) => (
-            <option key={area.id} value={area.id}>
-              {area.name}
-            </option>
+            <label key={area.id} className="flex items-center gap-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                value={area.id}
+                checked={formData.zone_ids.includes(area.id)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setFormData({ ...formData, zone_ids: [...formData.zone_ids, area.id] });
+                  } else {
+                    setFormData({ ...formData, zone_ids: formData.zone_ids.filter(id => id !== area.id) });
+                  }
+                }}
+                className="w-4 h-4"
+              />
+              <span className="text-sm">{area.name}</span>
+            </label>
           ))}
-        </select>
-      </div>
-
-      {/* Status */}
-      <div>
-        <label htmlFor="status" className="block text-sm font-medium mb-1">
-          Status *
-        </label>
-        <select
-          id="status"
-          required
-          value={formData.status}
-          onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-          className="w-full px-3 py-1.5 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background text-sm"
-        >
-          <option value="">Select status...</option>
-          <option value="thriving">Thriving - Making great progress</option>
-          <option value="maintaining">Maintaining - Steady state</option>
-          <option value="struggling">Struggling - Need support</option>
-        </select>
-      </div>
-
-      {/* Mood Rating */}
-      <div>
-        <label htmlFor="mood_rating" className="block text-sm font-medium mb-1">
-          Mood Rating: {formData.mood_rating}/10
-        </label>
-        <input
-          type="range"
-          id="mood_rating"
-          min="1"
-          max="10"
-          value={formData.mood_rating}
-          onChange={(e) =>
-            setFormData({ ...formData, mood_rating: parseInt(e.target.value) })
-          }
-          className="w-full"
-        />
-        <div className="flex justify-between text-xs text-foreground/60">
-          <span>Low</span>
-          <span>High</span>
         </div>
+        {formData.zone_ids.includes(lifeAreas.find(a => a.name === 'Other')?.id || '') && (
+          <input
+            type="text"
+            maxLength={20}
+            value={formData.zone_other}
+            onChange={(e) => setFormData({ ...formData, zone_other: e.target.value })}
+            placeholder="What zone?"
+            required
+            className="w-full mt-2 px-3 py-2 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background text-sm"
+          />
+        )}
+      </div>
+
+      {/* I'm feeling... */}
+      <div>
+        <label className="block text-sm font-medium mb-2">
+          I'm feeling... * (select at least one)
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {['Anxious', 'Pissed Off', 'Meh', 'Optimistic', 'Solid', 'On Fire', 'Other'].map((feeling) => (
+            <label key={feeling} className="flex items-center gap-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                value={feeling}
+                checked={formData.statuses.includes(feeling)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setFormData({ ...formData, statuses: [...formData.statuses, feeling] });
+                  } else {
+                    setFormData({ ...formData, statuses: formData.statuses.filter(s => s !== feeling) });
+                  }
+                }}
+                className="w-4 h-4"
+              />
+              <span className="text-sm">{feeling}</span>
+            </label>
+          ))}
+        </div>
+        {formData.statuses.includes('Other') && (
+          <input
+            type="text"
+            value={formData.status_other}
+            onChange={(e) => setFormData({ ...formData, status_other: e.target.value })}
+            placeholder="Describe how you're feeling..."
+            required
+            className="w-full mt-2 px-3 py-2 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background text-sm"
+          />
+        )}
+      </div>
+
+      {/* I want you to... */}
+      <div>
+        <label className="block text-sm font-medium mb-2">
+          I want you to... *
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {['Listen', 'Support', 'Advise', 'Hug Me', 'Call me', 'Other'].map((option) => (
+            <label key={option} className="flex items-center gap-1.5 cursor-pointer">
+              <input
+                type="radio"
+                name="support_type"
+                value={option}
+                checked={formData.support_type === option}
+                onChange={(e) => setFormData({ ...formData, support_type: e.target.value })}
+                required
+                className="w-4 h-4"
+              />
+              <span className="text-sm">{option}</span>
+            </label>
+          ))}
+        </div>
+        {formData.support_type === 'Other' && (
+          <input
+            type="text"
+            value={formData.support_type_other}
+            onChange={(e) => setFormData({ ...formData, support_type_other: e.target.value })}
+            placeholder="What do you need?"
+            required
+            className="w-full mt-2 px-3 py-2 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background text-sm"
+          />
+        )}
       </div>
 
       {/* Notes */}
       <div>
         <label htmlFor="notes" className="block text-sm font-medium mb-1">
-          Notes (optional)
+          Checkin details:
         </label>
         <textarea
           id="notes"
-          rows={2}
+          rows={3}
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           placeholder="Add any additional thoughts or context..."
-          className="w-full px-3 py-1.5 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background text-sm"
+          className="w-full px-3 py-2 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background text-sm"
         />
       </div>
 
@@ -161,7 +224,7 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
         disabled={loading}
         className="w-full py-2 px-4 bg-foreground text-background font-medium rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
       >
-        {loading ? 'Saving...' : 'Save Status Update'}
+        {loading ? 'Sharing...' : 'Share with the Six'}
       </button>
     </form>
   );

@@ -30,17 +30,6 @@ export default async function DashboardPage() {
     .single();
 
 
-  // Fetch recent life status updates
-  const { data: recentStatuses } = await supabase
-    .from('life_status_updates')
-    .select(`
-      *,
-      life_area:life_areas(*)
-    `)
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(3);
-
   // Fetch all life areas
   const { data: lifeAreas } = await supabase
     .from('life_areas')
@@ -53,35 +42,20 @@ export default async function DashboardPage() {
     .select('id, full_name, display_name')
     .order('full_name', { ascending: true });
 
-  // For each user, get their most recent status for each life area
-  const usersWithStatus = await Promise.all(
+  // For each user, get their most recent check-in
+  const usersWithCheckins = await Promise.all(
     (allUsers || []).map(async (member) => {
-      const { data: allStatuses } = await supabase
+      const { data: latestCheckin } = await supabase
         .from('life_status_updates')
-        .select(`
-          *,
-          life_area:life_areas(*)
-        `)
+        .select('*')
         .eq('user_id', member.id)
-        .order('created_at', { ascending: false });
-
-      // Get latest status for each life area
-      const statusByArea: Record<string, any> = {};
-      allStatuses?.forEach((status: any) => {
-        if (!statusByArea[status.life_area_id]) {
-          statusByArea[status.life_area_id] = status;
-        }
-      });
-
-      // Get most recent update date across all areas
-      const mostRecentUpdate = allStatuses && allStatuses.length > 0
-        ? allStatuses[0].created_at
-        : null;
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
 
       return {
         ...member,
-        statusByArea,
-        mostRecentUpdate,
+        latestCheckin,
       };
     })
   );
@@ -157,9 +131,9 @@ export default async function DashboardPage() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Recent Messages */}
+        {/* Messages */}
         <div className="border border-foreground/20 rounded-lg p-6">
-          <h3 className="font-semibold mb-3">Recent Messages</h3>
+          <h3 className="font-semibold mb-3">Messages</h3>
           <div className="mb-4">
             <GroupMessageForm />
           </div>
@@ -204,9 +178,9 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        {/* Recent Photos */}
+        {/* Photos */}
         <div className="border border-foreground/20 rounded-lg p-6">
-          <h3 className="font-semibold mb-3">Recent Photos</h3>
+          <h3 className="font-semibold mb-3">Photos</h3>
           {recentPhotos && recentPhotos.length > 0 ? (
             <>
               <div className="space-y-3 mb-3">
@@ -254,64 +228,65 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Recent Life Updates - All Members */}
+      {/* Check-ins - All Members */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Recent Life Updates</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {usersWithStatus?.map((member: any) => (
-            <div
-              key={member.id}
-              className="border border-foreground/20 rounded-lg p-4"
-            >
-              <div className="mb-3">
-                <h3 className="font-semibold text-sm">
-                  <Link
-                    href={`/dashboard/profile/${member.id}`}
-                    className="hover:underline"
-                  >
-                    {member.display_name || member.full_name}
-                  </Link>
-                </h3>
-                {member.mostRecentUpdate && (
-                  <p className="text-xs text-foreground/60">
-                    Last update: {format(new Date(member.mostRecentUpdate), 'MMM d, h:mm a')}
-                  </p>
-                )}
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {lifeAreas?.map((area: any) => {
-                  const status = member.statusByArea[area.id];
-                  return (
-                    <div key={area.id} className="text-xs">
-                      <p className="font-medium text-foreground/80 mb-1">
-                        {area.name}
+        <h2 className="text-xl font-semibold mb-4">Check-ins</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {usersWithCheckins?.map((member: any) => {
+            const checkin = member.latestCheckin;
+
+            // Get zone names
+            let zoneNames = 'No zones';
+            if (checkin?.zone_ids && Array.isArray(checkin.zone_ids)) {
+              zoneNames = checkin.zone_ids
+                .map((zoneId: string) => {
+                  const area = lifeAreas?.find((a: any) => a.id === zoneId);
+                  if (area?.name === 'Other' && checkin.zone_other) {
+                    return checkin.zone_other;
+                  }
+                  return area?.name;
+                })
+                .filter(Boolean)
+                .join(', ');
+            }
+
+            return (
+              <div
+                key={member.id}
+                className="border border-foreground/20 rounded-lg p-4"
+              >
+                <div className="mb-3">
+                  <h3 className="font-semibold text-sm">
+                    <Link
+                      href={`/dashboard/profile/${member.id}`}
+                      className="hover:underline"
+                    >
+                      {member.display_name || member.full_name}
+                    </Link>
+                  </h3>
+                  {checkin ? (
+                    <>
+                      <p className="text-xs text-foreground/60 mt-1">
+                        {format(new Date(checkin.created_at), 'MMM d, h:mm a')}
                       </p>
-                      {status ? (
-                        <div className="space-y-1">
-                          <span
-                            className={`text-xs px-1.5 py-0.5 rounded inline-block ${
-                              status.status === 'thriving'
-                                ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                                : status.status === 'maintaining'
-                                ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-                                : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
-                            }`}
-                          >
-                            {status.status}
-                          </span>
-                          <p className="text-foreground/60">
-                            Mood: {status.mood_rating}/10
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="text-foreground/60">No update</p>
-                      )}
-                    </div>
-                  );
-                })}
+                      <p className="text-xs text-foreground/60 mt-1">
+                        <span className="font-medium">Zones:</span> {zoneNames}
+                      </p>
+                      <p className="text-xs text-foreground/80 mt-2">
+                        <span className="font-medium">Feeling:</span> {checkin.status}
+                        {checkin.status_other && ` (${checkin.status_other})`}
+                      </p>
+                      <p className="text-xs text-foreground/80 mt-1">
+                        <span className="font-medium">Needs:</span> {checkin.support_type === 'Other' ? checkin.support_type_other : checkin.support_type}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-xs text-foreground/60 mt-1">No check-ins yet</p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -323,13 +298,13 @@ export default async function DashboardPage() {
             href="/dashboard/life-status"
             className="border border-foreground/20 rounded-lg p-4 hover:bg-foreground/5 transition text-center"
           >
-            <p className="font-medium text-sm">Update Status</p>
+            <p className="font-medium text-sm">Post Check-in</p>
           </Link>
           <Link
             href="/dashboard/questions"
             className="border border-foreground/20 rounded-lg p-4 hover:bg-foreground/5 transition text-center"
           >
-            <p className="font-medium text-sm">Ask Question</p>
+            <p className="font-medium text-sm">Pose a Question to The Six</p>
           </Link>
           <Link
             href="/dashboard/photos"

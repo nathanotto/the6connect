@@ -61,30 +61,45 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { life_area_id, status, notes, mood_rating } = body;
+    const { zone_ids, zone_other, statuses, status_other, notes, support_type, support_type_other } = body;
 
     // Validate required fields
-    if (!life_area_id || !status) {
+    if (!zone_ids || !Array.isArray(zone_ids) || zone_ids.length === 0) {
       return NextResponse.json(
-        { error: 'life_area_id and status are required' },
+        { error: 'At least one zone is required' },
         { status: 400 }
       );
     }
 
-    // Create new life status update
+    if (!statuses || !Array.isArray(statuses) || statuses.length === 0) {
+      return NextResponse.json(
+        { error: 'At least one feeling is required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate support_type is required
+    if (!support_type) {
+      return NextResponse.json(
+        { error: 'support_type is required' },
+        { status: 400 }
+      );
+    }
+
+    // Create new check-in
     const { data, error } = await supabase
       .from('life_status_updates')
       .insert({
         user_id: user.id,
-        life_area_id,
-        status,
+        zone_ids,
+        zone_other: zone_other || null,
+        status: statuses.join(', '), // Store as comma-separated string for now
+        status_other: statuses.includes('Other') ? status_other : null,
         notes,
-        mood_rating,
+        support_type,
+        support_type_other: support_type === 'Other' ? support_type_other : null,
       })
-      .select(`
-        *,
-        life_area:life_areas(*)
-      `)
+      .select('*')
       .single();
 
     if (error) {
@@ -94,12 +109,12 @@ export async function POST(request: NextRequest) {
     // Log activity
     await supabase.from('activity_log').insert({
       user_id: user.id,
-      activity_type: 'life_status_update',
+      activity_type: 'checkin',
       entity_type: 'life_status_updates',
       entity_id: data.id,
       metadata: {
-        life_area: life_area_id,
-        status,
+        zone_ids,
+        statuses,
       },
     });
 
