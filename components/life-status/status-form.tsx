@@ -87,22 +87,50 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
     }
   };
 
+  // Color mapping for feelings - masculine/serious palette
+  const feelingColors: Record<string, string> = {
+    'Anxious': 'border-yellow-700 dark:border-yellow-600 hover:bg-yellow-900/20 dark:hover:bg-yellow-900/30',
+    'Pissed Off': 'border-red-800 dark:border-red-700 hover:bg-red-900/20 dark:hover:bg-red-900/30',
+    'Meh': 'border-gray-600 dark:border-gray-500 hover:bg-gray-700/20 dark:hover:bg-gray-700/30',
+    'Optimistic': 'border-blue-700 dark:border-blue-600 hover:bg-blue-900/20 dark:hover:bg-blue-900/30',
+    'Solid': 'border-green-700 dark:border-green-600 hover:bg-green-900/20 dark:hover:bg-green-900/30',
+    'On Fire': 'border-orange-700 dark:border-orange-600 hover:bg-orange-900/20 dark:hover:bg-orange-900/30',
+    'Other': 'border-slate-600 dark:border-slate-500 hover:bg-slate-700/20 dark:hover:bg-slate-700/30',
+  };
+
+  const feelingSelectedColors: Record<string, string> = {
+    'Anxious': 'bg-yellow-800/20 dark:bg-yellow-800/30 border-yellow-600 dark:border-yellow-500',
+    'Pissed Off': 'bg-red-800/20 dark:bg-red-800/30 border-red-600 dark:border-red-500',
+    'Meh': 'bg-gray-700/20 dark:bg-gray-600/30 border-gray-500 dark:border-gray-400',
+    'Optimistic': 'bg-blue-800/20 dark:bg-blue-800/30 border-blue-600 dark:border-blue-500',
+    'Solid': 'bg-green-800/20 dark:bg-green-800/30 border-green-600 dark:border-green-500',
+    'On Fire': 'bg-orange-800/20 dark:bg-orange-800/30 border-orange-600 dark:border-orange-500',
+    'Other': 'bg-slate-700/20 dark:bg-slate-600/30 border-slate-500 dark:border-slate-400',
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+    <form onSubmit={handleSubmit} className="space-y-0 max-w-md">
       {error && (
-        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-3 py-2 rounded text-sm">
+        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-3 py-2 rounded text-sm mb-0">
           {error}
         </div>
       )}
 
       {/* Zone Selection */}
-      <div>
-        <label className="block text-sm font-medium mb-2">
+      <div className="border border-slate-500 dark:border-slate-600 p-3 bg-slate-700/10 dark:bg-slate-800/20">
+        <label className="block text-sm font-medium mb-2 text-slate-800 dark:text-slate-300">
           Zone * (select at least one)
         </label>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-3 gap-0">
           {lifeAreas.map((area) => (
-            <label key={area.id} className="flex items-center gap-1.5 cursor-pointer">
+            <label
+              key={area.id}
+              className={`flex items-center gap-1.5 cursor-pointer border p-2 transition ${
+                formData.zone_ids.includes(area.id)
+                  ? 'bg-slate-700/20 dark:bg-slate-700/40 border-slate-600 dark:border-slate-500'
+                  : 'border-slate-500 dark:border-slate-600 hover:bg-slate-700/10 dark:hover:bg-slate-700/20'
+              }`}
+            >
               <input
                 type="checkbox"
                 value={area.id}
@@ -114,7 +142,7 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
                     setFormData({ ...formData, zone_ids: formData.zone_ids.filter(id => id !== area.id) });
                   }
                 }}
-                className="w-4 h-4"
+                className="w-4 h-4 accent-slate-700"
               />
               <span className="text-sm">{area.name}</span>
             </label>
@@ -128,19 +156,26 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
             onChange={(e) => setFormData({ ...formData, zone_other: e.target.value })}
             placeholder="What zone?"
             required
-            className="w-full mt-2 px-3 py-2 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background text-sm"
+            className="w-full mt-2 px-3 py-2 border border-slate-500 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-600 bg-background text-sm"
           />
         )}
       </div>
 
       {/* I'm feeling... */}
-      <div>
+      <div className="border border-foreground/20 border-t-0 p-3 bg-gradient-to-br from-transparent to-foreground/5">
         <label className="block text-sm font-medium mb-2">
           I'm feeling... * (select at least one)
         </label>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-3 gap-0">
           {['Anxious', 'Pissed Off', 'Meh', 'Optimistic', 'Solid', 'On Fire', 'Other'].map((feeling) => (
-            <label key={feeling} className="flex items-center gap-1.5 cursor-pointer">
+            <label
+              key={feeling}
+              className={`flex items-center gap-1.5 cursor-pointer border p-2 transition ${
+                formData.statuses.includes(feeling)
+                  ? feelingSelectedColors[feeling]
+                  : feelingColors[feeling]
+              }`}
+            >
               <input
                 type="checkbox"
                 value={feeling}
@@ -165,19 +200,26 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
             onChange={(e) => setFormData({ ...formData, status_other: e.target.value })}
             placeholder="Describe how you're feeling..."
             required
-            className="w-full mt-2 px-3 py-2 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background text-sm"
+            className="w-full mt-2 px-3 py-2 border border-purple-300 dark:border-purple-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-background text-sm"
           />
         )}
       </div>
 
       {/* I want you to... */}
-      <div>
-        <label className="block text-sm font-medium mb-2">
+      <div className="border border-stone-500 dark:border-stone-600 border-t-0 p-3 bg-stone-700/10 dark:bg-stone-800/20">
+        <label className="block text-sm font-medium mb-2 text-stone-800 dark:text-stone-300">
           I want you to... *
         </label>
         <div className="flex flex-wrap gap-2">
           {['Listen', 'Support', 'Advise', 'Hug Me', 'Call me', 'Other'].map((option) => (
-            <label key={option} className="flex items-center gap-1.5 cursor-pointer">
+            <label
+              key={option}
+              className={`flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-md border transition ${
+                formData.support_type === option
+                  ? 'bg-stone-700/20 dark:bg-stone-700/40 border-stone-600 dark:border-stone-500'
+                  : 'border-stone-500 dark:border-stone-600 hover:bg-stone-700/10 dark:hover:bg-stone-700/20'
+              }`}
+            >
               <input
                 type="radio"
                 name="support_type"
@@ -185,7 +227,7 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
                 checked={formData.support_type === option}
                 onChange={(e) => setFormData({ ...formData, support_type: e.target.value })}
                 required
-                className="w-4 h-4"
+                className="w-4 h-4 accent-stone-700"
               />
               <span className="text-sm">{option}</span>
             </label>
@@ -198,13 +240,13 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
             onChange={(e) => setFormData({ ...formData, support_type_other: e.target.value })}
             placeholder="What do you need?"
             required
-            className="w-full mt-2 px-3 py-2 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background text-sm"
+            className="w-full mt-2 px-3 py-2 border border-stone-500 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-600 bg-background text-sm"
           />
         )}
       </div>
 
       {/* Notes */}
-      <div>
+      <div className="border border-foreground/20 border-t-0 p-3 bg-foreground/5">
         <label htmlFor="notes" className="block text-sm font-medium mb-1">
           Checkin details:
         </label>
@@ -219,13 +261,15 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
       </div>
 
       {/* Submit Button */}
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-2 px-4 bg-foreground text-background font-medium rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
-      >
-        {loading ? 'Sharing...' : 'Share with the Six'}
-      </button>
+      <div className="border border-slate-500 dark:border-slate-600 border-t-0 p-3 bg-slate-700/10 dark:bg-slate-800/20">
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-2 px-4 bg-slate-700 hover:bg-slate-800 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm shadow-sm"
+        >
+          {loading ? 'Sharing...' : 'Share with the Six'}
+        </button>
+      </div>
     </form>
   );
 }

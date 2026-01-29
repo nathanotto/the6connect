@@ -52,29 +52,30 @@ export function AnswerForm({ questionId }: AnswerFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2 max-w-md">
+    <form onSubmit={handleSubmit} className="space-y-0 max-w-md border border-neutral-500 dark:border-neutral-600 bg-neutral-100 dark:bg-neutral-800/30">
       {error && (
-        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-3 py-2 rounded text-sm">
+        <div className="bg-red-50 dark:bg-red-950 border-b border-neutral-500 dark:border-neutral-600 text-red-800 dark:text-red-200 px-3 py-2 text-sm">
           {error}
         </div>
       )}
 
-      <textarea
-        required
-        rows={2}
-        value={answerText}
-        onChange={(e) => setAnswerText(e.target.value)}
-        placeholder="Your answer..."
-        className="w-full px-3 py-1.5 border border-foreground/20 rounded focus:outline-none focus:ring-1 focus:ring-foreground/40 bg-background text-sm"
-      />
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="py-1.5 px-4 bg-foreground text-background font-medium rounded hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-foreground disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
-      >
-        {loading ? 'Submitting...' : 'Submit Answer'}
-      </button>
+      <div className="flex gap-0">
+        <textarea
+          required
+          rows={2}
+          value={answerText}
+          onChange={(e) => setAnswerText(e.target.value)}
+          placeholder="Your answer..."
+          className="flex-1 px-3 py-2 border-r border-neutral-500 dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-neutral-600 bg-white dark:bg-neutral-900/30 text-sm resize-none"
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="py-2 px-4 bg-neutral-700 hover:bg-neutral-800 text-white font-medium focus:outline-none focus:ring-2 focus:ring-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
+        >
+          {loading ? '...' : 'Submit'}
+        </button>
+      </div>
     </form>
   );
 }

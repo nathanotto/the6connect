@@ -188,9 +188,13 @@ export function CheckinCard({ checkin, member, lifeAreas, currentUserId }: Check
 
   if (!checkin) {
     return (
-      <div className="border border-foreground/20 rounded-lg p-4">
-        <h3 className="font-semibold mb-2">{member.display_name || member.full_name}</h3>
-        <p className="text-sm text-foreground/60">No check-ins yet</p>
+      <div className="border border-zinc-400 dark:border-zinc-600 p-0 bg-zinc-100/50 dark:bg-zinc-900/20">
+        <div className="border border-zinc-400 dark:border-zinc-600 p-3 bg-zinc-200 dark:bg-zinc-800/40">
+          <h3 className="font-semibold text-lg text-zinc-900 dark:text-zinc-200">{member.display_name || member.full_name}</h3>
+        </div>
+        <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-3 bg-white dark:bg-zinc-900/30">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">No check-ins yet</p>
+        </div>
       </div>
     );
   }
@@ -210,11 +214,11 @@ export function CheckinCard({ checkin, member, lifeAreas, currentUserId }: Check
   const aging = getRelativeTimeString(checkin.created_at);
 
   return (
-    <div className="border border-foreground/20 rounded-lg p-4">
+    <div className="border border-zinc-400 dark:border-zinc-600 p-0 bg-zinc-100/50 dark:bg-zinc-900/20">
       {/* Header with member name, zones, and aging */}
-      <div className="mb-3">
-        <h3 className="font-semibold text-lg">{member.display_name || member.full_name}</h3>
-        <div className="flex items-center gap-2 mt-1 text-sm text-foreground/60">
+      <div className="border border-zinc-400 dark:border-zinc-600 p-3 bg-zinc-200 dark:bg-zinc-800/40">
+        <h3 className="font-semibold text-lg text-zinc-900 dark:text-zinc-200">{member.display_name || member.full_name}</h3>
+        <div className="flex items-center gap-2 mt-1 text-sm text-zinc-700 dark:text-zinc-400">
           <span className="font-medium">{zoneNames}</span>
           <span>•</span>
           <span>{aging}</span>
@@ -366,30 +370,32 @@ export function CheckinCard({ checkin, member, lifeAreas, currentUserId }: Check
         </form>
       ) : (
         <>
-          <div className="space-y-2 mb-3">
-            <div className="text-sm">
-              <span className="text-foreground/60">Feeling: </span>
-              <span className="font-medium">
+          <div className="space-y-0">
+            <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-3 text-sm bg-white dark:bg-zinc-900/30">
+              <span className="text-zinc-700 dark:text-zinc-400 font-medium">Feeling: </span>
+              <span className="font-medium text-foreground">
                 {checkin.status}
                 {checkin.status_other && ` (${checkin.status_other})`}
               </span>
             </div>
-            <div className="text-sm">
-              <span className="text-foreground/60">Needs: </span>
-              <span>
+            <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-3 text-sm bg-white dark:bg-zinc-900/30">
+              <span className="text-zinc-700 dark:text-zinc-400 font-medium">Needs: </span>
+              <span className="text-foreground">
                 {checkin.support_type === 'Other' ? checkin.support_type_other : checkin.support_type}
               </span>
             </div>
             {checkin.notes && (
-              <p className="text-sm text-foreground/80 mt-2">{checkin.notes}</p>
+              <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-3 text-sm bg-zinc-100 dark:bg-zinc-800/30">
+                <p className="text-foreground/90">{checkin.notes}</p>
+              </div>
             )}
           </div>
 
           {/* Comments toggle, Edit, and Delete buttons */}
-          <div className="flex items-center gap-3">
+          <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-3 flex items-center gap-3 bg-zinc-100/50 dark:bg-zinc-900/20">
             <button
               onClick={() => setShowComments(!showComments)}
-              className="text-sm text-foreground/60 hover:text-foreground transition"
+              className="text-sm text-zinc-700 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition font-medium"
             >
               {showComments ? 'Hide' : 'Show'} responses ({comments.length})
             </button>
@@ -397,7 +403,7 @@ export function CheckinCard({ checkin, member, lifeAreas, currentUserId }: Check
             {checkin.user_id === currentUserId && isEditable() && (
               <button
                 onClick={() => setEditing(true)}
-                className="text-sm text-blue-600 hover:text-blue-700 transition"
+                className="text-sm text-blue-700 dark:text-blue-500 hover:text-blue-900 dark:hover:text-blue-300 transition font-medium"
               >
                 Edit check-in
               </button>
@@ -407,7 +413,7 @@ export function CheckinCard({ checkin, member, lifeAreas, currentUserId }: Check
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="text-sm text-red-600 hover:text-red-700 disabled:opacity-50 transition"
+                className="text-sm text-red-700 dark:text-red-500 hover:text-red-900 dark:hover:text-red-300 disabled:opacity-50 transition font-medium"
               >
                 {deleting ? 'Deleting...' : 'Delete check-in'}
               </button>
@@ -418,34 +424,34 @@ export function CheckinCard({ checkin, member, lifeAreas, currentUserId }: Check
 
       {/* Comments section */}
       {showComments && (
-        <div className="mt-4 space-y-3">
+        <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-3 space-y-0 bg-stone-100 dark:bg-stone-900/30">
           {/* Existing comments */}
           {comments.map((comment) => (
-            <div key={comment.id} className="border-l-2 border-foreground/10 pl-3">
-              <div className="flex items-center gap-2 text-xs text-foreground/60 mb-1">
+            <div key={comment.id} className="border border-stone-400 dark:border-stone-600 p-2 bg-white dark:bg-stone-900/50 mb-0 last:mb-3">
+              <div className="flex items-center gap-2 text-xs text-stone-600 dark:text-stone-400 mb-1">
                 <span className="font-medium">
                   {comment.user.display_name || comment.user.full_name}
                 </span>
                 <span>•</span>
                 <span>{getRelativeTimeString(comment.created_at)}</span>
               </div>
-              <p className="text-sm text-foreground/80">{comment.content}</p>
+              <p className="text-sm text-foreground/90">{comment.content}</p>
             </div>
           ))}
 
           {/* Add comment form */}
-          <form onSubmit={handleAddComment} className="mt-3">
+          <form onSubmit={handleAddComment} className="border border-stone-400 dark:border-stone-600 p-3 bg-white dark:bg-stone-900/50">
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Add a response..."
               rows={2}
-              className="w-full px-3 py-2 border border-foreground/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/40 bg-background text-sm"
+              className="w-full px-3 py-2 border border-stone-400 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-600 bg-background text-sm"
             />
             <button
               type="submit"
               disabled={loading || !newComment.trim()}
-              className="mt-2 px-4 py-1.5 bg-foreground text-background text-sm font-medium rounded hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="mt-2 px-4 py-1.5 bg-stone-700 hover:bg-stone-800 text-white text-sm font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
             >
               {loading ? 'Adding...' : 'Add Response'}
             </button>

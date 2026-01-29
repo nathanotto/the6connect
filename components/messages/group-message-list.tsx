@@ -26,25 +26,25 @@ interface GroupMessageListProps {
 
 export function GroupMessageList({ initialMessages, currentUserId }: GroupMessageListProps) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-0">
       {initialMessages.length > 0 ? (
         initialMessages.map((message) => {
           return (
             <div
               key={message.id}
-              className="border border-foreground/20 rounded p-1.5"
+              className="border border-neutral-500 dark:border-neutral-600 p-2 bg-white dark:bg-neutral-900/30"
             >
               <div className="flex items-start gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-xs font-medium">
+                    <span className="text-xs font-medium text-neutral-800 dark:text-neutral-300">
                       {message.sender.display_name || message.sender.full_name}
                     </span>
-                    <span className="text-xs text-foreground/60">
+                    <span className="text-xs text-neutral-600 dark:text-neutral-400">
                       {format(new Date(message.created_at), 'MMM d, h:mm a')}
                     </span>
                   </div>
-                  <p className="text-xs text-foreground/80 whitespace-pre-wrap">
+                  <p className="text-xs text-foreground/90 whitespace-pre-wrap">
                     {message.content}
                   </p>
                 </div>
@@ -53,9 +53,11 @@ export function GroupMessageList({ initialMessages, currentUserId }: GroupMessag
           );
         })
       ) : (
-        <p className="text-xs text-foreground/60 text-center py-3">
-          No group messages yet. Be the first to post!
-        </p>
+        <div className="border border-neutral-500 dark:border-neutral-600 p-3 bg-white dark:bg-neutral-900/30">
+          <p className="text-xs text-neutral-600 dark:text-neutral-400 text-center">
+            No group messages yet. Be the first to post!
+          </p>
+        </div>
       )}
     </div>
   );

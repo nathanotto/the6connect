@@ -54,16 +54,16 @@ export function QuestionForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 max-w-2xl">
+    <form onSubmit={handleSubmit} className="space-y-0 max-w-2xl">
       {error && (
-        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-3 py-2 rounded text-sm">
+        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-3 py-2 text-sm mb-0">
           {error}
         </div>
       )}
 
       {/* Question */}
-      <div>
-        <label htmlFor="question_text" className="block text-sm font-medium mb-1">
+      <div className="border border-stone-500 dark:border-stone-600 p-3 bg-stone-700/10 dark:bg-stone-800/20">
+        <label htmlFor="question_text" className="block text-sm font-medium mb-2 text-stone-800 dark:text-stone-300">
           Question *
         </label>
         <textarea
@@ -75,13 +75,13 @@ export function QuestionForm() {
             setFormData({ ...formData, question_text: e.target.value })
           }
           placeholder="What would you like to ask the group?"
-          className="w-full px-3 py-1.5 border border-foreground/20 rounded focus:outline-none focus:ring-1 focus:ring-foreground/40 bg-background text-sm"
+          className="w-full px-3 py-2 border border-stone-500 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-600 bg-background text-sm"
         />
       </div>
 
       {/* Context (optional) */}
-      <div>
-        <label htmlFor="context" className="block text-sm font-medium mb-1">
+      <div className="border border-stone-500 dark:border-stone-600 border-t-0 p-3 bg-stone-700/10 dark:bg-stone-800/20">
+        <label htmlFor="context" className="block text-sm font-medium mb-2 text-stone-800 dark:text-stone-300">
           Context (optional)
         </label>
         <textarea
@@ -92,18 +92,20 @@ export function QuestionForm() {
             setFormData({ ...formData, context: e.target.value })
           }
           placeholder="Any additional context or background..."
-          className="w-full px-3 py-1.5 border border-foreground/20 rounded focus:outline-none focus:ring-1 focus:ring-foreground/40 bg-background text-sm"
+          className="w-full px-3 py-2 border border-stone-500 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-600 bg-background text-sm"
         />
       </div>
 
       {/* Submit Button */}
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-2 px-4 bg-foreground text-background font-medium rounded hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-foreground disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
-      >
-        {loading ? 'Submitting...' : 'Submit Question'}
-      </button>
+      <div className="border border-stone-500 dark:border-stone-600 border-t-0 p-3 bg-stone-700/10 dark:bg-stone-800/20">
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-2 px-4 bg-stone-700 hover:bg-stone-800 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-600 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm shadow-sm"
+        >
+          {loading ? 'Submitting...' : 'Submit Question'}
+        </button>
+      </div>
     </form>
   );
 }

@@ -72,57 +72,69 @@ export function EventCard({ event, totalUsers, currentUserId }: EventCardProps) 
   return (
     <Link
       href={`/dashboard/schedule/event/${event.id}`}
-      className="block border border-foreground/20 rounded-lg p-4 hover:bg-foreground/5 transition"
+      className="block border border-stone-500 dark:border-stone-600 p-0 hover:bg-stone-700/10 dark:hover:bg-stone-700/20 transition bg-stone-700/5 dark:bg-stone-800/20"
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-lg">{event.title}</h3>
-            {event.is_confirmed && (
-              <span className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-0.5 rounded font-medium">
-                Confirmed
-              </span>
-            )}
+      <div className="flex flex-col md:flex-row items-start gap-0">
+        <div className="flex-1 w-full">
+          {/* Title and Status */}
+          <div className="border border-stone-500 dark:border-stone-600 p-3 bg-stone-200 dark:bg-stone-800/40">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-lg text-stone-900 dark:text-stone-200">{event.title}</h3>
+              {event.is_confirmed && (
+                <span className="text-xs bg-green-700 text-white px-2 py-0.5 rounded font-medium">
+                  Confirmed
+                </span>
+              )}
+            </div>
           </div>
 
+          {/* Description */}
           {event.description && (
-            <p className="text-sm text-foreground/80 mb-2">{event.description}</p>
+            <div className="border border-stone-500 dark:border-stone-600 border-t-0 p-3 bg-white dark:bg-stone-900/30">
+              <p className="text-sm text-foreground/90">{event.description}</p>
+            </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-3 text-sm text-foreground/60">
-            <span>
-              {format(new Date(event.proposed_start), 'EEEE, MMM d')} at {format(new Date(event.proposed_start), 'h:mm a')}
-            </span>
+          {/* Date/Time */}
+          <div className="border border-stone-500 dark:border-stone-600 border-t-0 p-3 bg-white dark:bg-stone-900/30">
+            <div className="flex flex-wrap items-center gap-3 text-sm text-stone-700 dark:text-stone-400">
+              <span className="font-medium">
+                {format(new Date(event.proposed_start), 'EEEE, MMM d')} at {format(new Date(event.proposed_start), 'h:mm a')}
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3 mt-2">
-            <p className="text-xs text-foreground/60">
-              Proposed by {event.created_by.display_name || event.created_by.full_name}
-            </p>
-            {isOwner && (
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="text-xs text-red-600 hover:text-red-700 disabled:opacity-50 transition"
-              >
-                {deleting ? 'Deleting...' : 'Delete event'}
-              </button>
-            )}
+          {/* Creator and Delete */}
+          <div className="border border-stone-500 dark:border-stone-600 border-t-0 p-3 bg-stone-100 dark:bg-stone-900/20">
+            <div className="flex items-center gap-3">
+              <p className="text-xs text-stone-700 dark:text-stone-400">
+                Proposed by {event.created_by.display_name || event.created_by.full_name}
+              </p>
+              {isOwner && (
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="text-xs text-red-700 dark:text-red-500 hover:text-red-900 dark:hover:text-red-300 disabled:opacity-50 transition font-medium"
+                >
+                  {deleting ? 'Deleting...' : 'Delete event'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Invite Status */}
-        <div className="text-right">
-          <div className="text-xs text-foreground/60 mb-1">Invited:</div>
-          <div className="text-sm">
+        <div className="border border-stone-500 dark:border-stone-600 md:border-l-0 border-t-0 md:border-t p-4 bg-stone-200 dark:bg-stone-800/40 w-full md:w-48">
+          <div className="text-xs text-stone-700 dark:text-stone-400 mb-2 font-medium">Invited:</div>
+          <div className="text-sm space-y-1">
             {invitedCount === 0 ? (
-              <div className="text-red-700 dark:text-red-300">None invited</div>
+              <div className="text-red-700 dark:text-red-400 font-medium">None invited</div>
             ) : invitedCount === totalUsers ? (
-              <div className="text-green-700 dark:text-green-300">All invited</div>
+              <div className="text-green-700 dark:text-green-400 font-medium">All invited</div>
             ) : (
               <>
-                <div className="text-green-700 dark:text-green-300">{invitedCount} invited</div>
-                <div className="text-red-700 dark:text-red-300">{notInvitedCount} not yet invited</div>
+                <div className="text-green-700 dark:text-green-400 font-medium">{invitedCount} invited</div>
+                <div className="text-red-700 dark:text-red-400 font-medium">{notInvitedCount} not yet invited</div>
               </>
             )}
           </div>

@@ -59,26 +59,26 @@ export function DMForm({ recipientId, recipientName }: DMFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
+    <form onSubmit={handleSubmit} className="space-y-0 border border-stone-500 dark:border-stone-600 bg-stone-100 dark:bg-stone-800/30">
       {error && (
-        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-2 py-1 rounded text-xs">
+        <div className="bg-red-50 dark:bg-red-950 border-b border-stone-500 dark:border-stone-600 text-red-800 dark:text-red-200 px-2 py-1 text-xs">
           {error}
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex gap-0">
         <input
           type="text"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder={`Message ${recipientName}...`}
-          className="flex-1 px-2 py-1.5 border border-foreground/20 rounded focus:outline-none focus:ring-1 focus:ring-foreground/40 bg-background text-sm"
+          className="flex-1 px-3 py-2 border-r border-stone-500 dark:border-stone-600 focus:outline-none focus:ring-2 focus:ring-stone-600 bg-white dark:bg-stone-900/30 text-sm"
           disabled={loading}
         />
         <button
           type="submit"
           disabled={loading || !content.trim()}
-          className="py-1.5 px-3 bg-foreground text-background font-medium rounded hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-foreground disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
+          className="py-2 px-4 bg-stone-700 hover:bg-stone-800 text-white font-medium focus:outline-none focus:ring-2 focus:ring-stone-600 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
         >
           {loading ? '...' : 'Send'}
         </button>

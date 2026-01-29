@@ -61,26 +61,26 @@ export default async function QuestionsPage() {
       </div>
 
       {/* Recent Questions and Ask a Question - Side by Side */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-0 border border-neutral-500 dark:border-neutral-600">
         {/* 5 Most Recent Questions */}
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Recent Questions (5 Most Recent)</h2>
+        <div className="p-6 bg-neutral-700/10 dark:bg-neutral-800/20">
+          <h2 className="text-xl font-semibold mb-4 text-neutral-800 dark:text-neutral-300">Recent Questions (5 Most Recent)</h2>
           {questionsWithAnswers && questionsWithAnswers.length > 0 ? (
-            <div className="space-y-6">
-              {questionsWithAnswers.map((question: any) => (
+            <div className="space-y-0">
+              {questionsWithAnswers.map((question: any, index: number) => (
                 <div
                   key={question.id}
-                  className="border border-foreground/20 rounded-lg p-6"
+                  className={`border border-neutral-500 dark:border-neutral-600 p-0 bg-neutral-100/50 dark:bg-neutral-900/20 ${index > 0 ? 'mt-4' : ''}`}
                 >
                   {/* Question Header */}
-                  <div className="mb-4">
+                  <div className="border-b border-neutral-500 dark:border-neutral-600 p-4 bg-neutral-200 dark:bg-neutral-800/40">
                     <div className="flex items-start justify-between gap-4 mb-2">
-                      <h3 className="text-lg font-semibold">{question.question_text}</h3>
-                      <span className="text-xs text-foreground/60 whitespace-nowrap">
+                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-200">{question.question_text}</h3>
+                      <span className="text-xs text-neutral-600 dark:text-neutral-400 whitespace-nowrap">
                         {format(new Date(question.created_at), 'MMM d, yyyy')}
                       </span>
                     </div>
-                    <p className="text-sm text-foreground/60">
+                    <p className="text-sm text-neutral-700 dark:text-neutral-400">
                       Asked by{' '}
                       <Link
                         href={`/dashboard/profile/${question.asked_by.id}`}
@@ -90,32 +90,32 @@ export default async function QuestionsPage() {
                       </Link>
                     </p>
                     {question.context && (
-                      <p className="text-sm text-foreground/80 mt-2 italic">
+                      <p className="text-sm text-neutral-800 dark:text-neutral-300 mt-2 italic">
                         {question.context}
                       </p>
                     )}
                   </div>
 
                   {/* Answers */}
-                  <div className="space-y-3 mb-4">
-                    <h4 className="text-sm font-semibold text-foreground/80">
+                  <div className="border-b border-neutral-500 dark:border-neutral-600 p-4 space-y-0 bg-white dark:bg-neutral-900/30">
+                    <h4 className="text-sm font-semibold text-neutral-800 dark:text-neutral-300 mb-3">
                       Answers ({question.answers.length})
                     </h4>
                     {question.answers.length > 0 ? (
-                      <div className="space-y-3">
+                      <div className="space-y-0">
                         {question.answers.map((answer: any) => (
                           <div
                             key={answer.id}
-                            className="bg-foreground/5 rounded-lg p-3"
+                            className="border border-neutral-500 dark:border-neutral-600 p-3 bg-neutral-100 dark:bg-neutral-800/30"
                           >
                             <div className="flex items-start justify-between gap-2 mb-1">
                               <Link
                                 href={`/dashboard/profile/${answer.user.id}`}
-                                className="text-sm font-medium hover:underline"
+                                className="text-sm font-medium text-neutral-800 dark:text-neutral-300 hover:underline"
                               >
                                 {answer.user.display_name || answer.user.full_name}
                               </Link>
-                              <span className="text-xs text-foreground/60">
+                              <span className="text-xs text-neutral-600 dark:text-neutral-400">
                                 {format(new Date(answer.created_at), 'MMM d')}
                               </span>
                             </div>
@@ -126,14 +126,16 @@ export default async function QuestionsPage() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-foreground/60">
-                        No answers yet. Be the first to answer!
-                      </p>
+                      <div className="border border-neutral-500 dark:border-neutral-600 p-3 bg-white dark:bg-neutral-900/30">
+                        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                          No answers yet. Be the first to answer!
+                        </p>
+                      </div>
                     )}
                   </div>
 
                   {/* Answer Form */}
-                  <div className="pt-3 border-t border-foreground/10">
+                  <div className="p-4 bg-neutral-100/50 dark:bg-neutral-900/20">
                     <AnswerForm
                       questionId={question.id}
                     />
@@ -142,8 +144,8 @@ export default async function QuestionsPage() {
               ))}
             </div>
           ) : (
-            <div className="border border-foreground/20 rounded-lg p-8 text-center">
-              <p className="text-foreground/60">
+            <div className="border border-neutral-500 dark:border-neutral-600 p-8 text-center bg-white dark:bg-neutral-900/30">
+              <p className="text-neutral-600 dark:text-neutral-400">
                 No questions yet. Be the first to ask a question!
               </p>
             </div>
@@ -151,9 +153,9 @@ export default async function QuestionsPage() {
         </div>
 
         {/* Submit New Question */}
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Ask a Question</h2>
-          <div className="border border-foreground/20 rounded-lg p-4">
+        <div className="border-t md:border-t-0 md:border-l border-neutral-500 dark:border-neutral-600 p-6 bg-stone-700/10 dark:bg-stone-800/20">
+          <h2 className="text-xl font-semibold mb-4 text-stone-800 dark:text-stone-300">Ask a Question</h2>
+          <div className="border border-stone-500 dark:border-stone-600 p-4 bg-white dark:bg-stone-900/30">
             <QuestionForm />
           </div>
         </div>

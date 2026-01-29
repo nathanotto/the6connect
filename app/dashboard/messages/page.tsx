@@ -66,59 +66,63 @@ export default async function MessagesPage() {
       </div>
 
       {/* Group Messages */}
-      <div className="border border-foreground/20 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold">Group Chat</h2>
+      <div className="border border-neutral-500 dark:border-neutral-600 p-0 bg-neutral-700/10 dark:bg-neutral-800/20">
+        <div className="flex items-center justify-between border-b border-neutral-500 dark:border-neutral-600 p-4 bg-neutral-200 dark:bg-neutral-800/40">
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-200">Group Chat</h2>
           <Link
             href="/dashboard/messages/group"
-            className="text-sm text-foreground/60 hover:text-foreground"
+            className="text-sm text-neutral-700 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200"
           >
             View all →
           </Link>
         </div>
-        <div className="mb-4">
+        <div className="p-4 border-b border-neutral-500 dark:border-neutral-600">
           <GroupMessageForm />
         </div>
-        <GroupMessageList
-          initialMessages={groupMessages || []}
-          currentUserId={user.id}
-        />
+        <div className="p-4">
+          <GroupMessageList
+            initialMessages={groupMessages || []}
+            currentUserId={user.id}
+          />
+        </div>
       </div>
 
       {/* Direct Messages */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Direct Messages</h2>
-        <div className="space-y-4">
-          {usersWithMessages.map((member) => (
+        <h2 className="text-xl font-semibold mb-0 px-4 py-3 bg-stone-200 dark:bg-stone-800/40 border border-stone-500 dark:border-stone-600 text-stone-900 dark:text-stone-200">Direct Messages</h2>
+        <div className="space-y-0 border border-stone-500 dark:border-stone-600 border-t-0">
+          {usersWithMessages.map((member, index) => (
             <div
               key={member.id}
-              className="border border-foreground/20 rounded-lg p-4"
+              className={`p-0 bg-stone-700/5 dark:bg-stone-800/20 ${index > 0 ? 'border-t-2 border-stone-600 dark:border-stone-500' : ''}`}
             >
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-sm">
+              <div className="flex items-center justify-between border-b border-stone-500 dark:border-stone-600 p-4 bg-stone-200 dark:bg-stone-800/40">
+                <h3 className="font-semibold text-sm text-stone-900 dark:text-stone-200">
                   {member.display_name || member.full_name}
                 </h3>
                 <Link
                   href={`/dashboard/messages/${member.id}`}
-                  className="text-xs text-foreground/60 hover:text-foreground"
+                  className="text-xs text-stone-700 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200"
                 >
                   View all →
                 </Link>
               </div>
 
-              <div className="mb-4">
+              <div className="p-4 border-b border-stone-500 dark:border-stone-600">
                 <DMForm
                   recipientId={member.id}
                   recipientName={member.display_name || member.full_name}
                 />
               </div>
 
-              <DMPreviewList
-                messages={member.messages}
-                currentUserId={user.id}
-                otherUserId={member.id}
-                otherUserName={member.display_name || member.full_name}
-              />
+              <div className="p-4">
+                <DMPreviewList
+                  messages={member.messages}
+                  currentUserId={user.id}
+                  otherUserId={member.id}
+                  otherUserName={member.display_name || member.full_name}
+                />
+              </div>
             </div>
           ))}
         </div>

@@ -129,17 +129,17 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Messages and Check-ins - Side by Side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
         {/* Messages */}
-        <div className="border border-foreground/20 rounded-lg p-6">
-          <h3 className="font-semibold mb-3">Messages</h3>
+        <div className="border border-neutral-500 dark:border-neutral-600 p-6 bg-neutral-700/10 dark:bg-neutral-800/20">
+          <h3 className="font-semibold mb-3 text-neutral-800 dark:text-neutral-300">Messages</h3>
           <div className="mb-4">
             <GroupMessageForm />
           </div>
           {allMessages && allMessages.length > 0 ? (
             <>
-              <div className="space-y-2 mb-3">
+              <div className="space-y-0 mb-3">
                 {allMessages.map((msg: any) => {
                   const truncatedContent =
                     msg.content.length > 50
@@ -147,8 +147,8 @@ export default async function DashboardPage() {
                       : msg.content;
 
                   return (
-                    <div key={`${msg.type}-${msg.id}`} className="text-sm border-b border-foreground/10 pb-2 last:border-0">
-                      <div className="text-xs text-foreground/60">
+                    <div key={`${msg.type}-${msg.id}`} className="text-sm border border-neutral-500 dark:border-neutral-600 p-2 bg-white dark:bg-neutral-900/30">
+                      <div className="text-xs text-neutral-600 dark:text-neutral-400">
                         {format(new Date(msg.created_at), 'MMM d')} - {msg.username}
                       </div>
                       <p className="text-foreground/80 truncate">{truncatedContent}</p>
@@ -158,19 +158,19 @@ export default async function DashboardPage() {
               </div>
               <Link
                 href="/dashboard/messages"
-                className="text-sm text-foreground/80 hover:text-foreground underline"
+                className="text-sm text-neutral-700 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 underline font-medium"
               >
                 View all messages →
               </Link>
             </>
           ) : (
             <>
-              <p className="text-sm text-foreground/60 mb-3">
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
                 No recent messages.
               </p>
               <Link
                 href="/dashboard/messages"
-                className="text-sm text-foreground/80 hover:text-foreground underline"
+                className="text-sm text-neutral-700 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 underline font-medium"
               >
                 Send a message →
               </Link>
@@ -178,141 +178,153 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        {/* Photos */}
-        <div className="border border-foreground/20 rounded-lg p-6">
-          <h3 className="font-semibold mb-3">Photos</h3>
-          {recentPhotos && recentPhotos.length > 0 ? (
-            <>
-              <div className="space-y-3 mb-3">
-                {recentPhotos.map((photo: any) => (
-                  <div key={photo.id} className="flex gap-3 border-b border-foreground/10 pb-3 last:border-0">
-                    <img
-                      src={photo.photo_url}
-                      alt={photo.caption || 'Photo'}
-                      className="w-16 h-16 object-cover rounded flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0 text-sm">
-                      <p className="font-medium text-xs text-foreground/80">
-                        {photo.user.display_name || photo.user.full_name}
-                      </p>
-                      <p className="text-xs text-foreground/60 truncate">
-                        {photo.caption || 'No caption'}
-                      </p>
-                      <p className="text-xs text-foreground/40">
-                        {format(new Date(photo.created_at), 'MMM d, h:mm a')}
-                      </p>
+        {/* Check-ins - All Members */}
+        <div className="border border-zinc-400 dark:border-zinc-600 border-t lg:border-t border-l-0 lg:border-l-0 bg-zinc-100/50 dark:bg-zinc-900/20">
+          <h3 className="font-semibold px-4 py-3 bg-zinc-200 dark:bg-zinc-800/40 border-b border-zinc-400 dark:border-zinc-600 text-zinc-900 dark:text-zinc-200">Check-ins</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+            {usersWithCheckins?.map((member: any, index: number) => {
+              const checkin = member.latestCheckin;
+
+              // Get zone names
+              let zoneNames = 'No zones';
+              if (checkin?.zone_ids && Array.isArray(checkin.zone_ids)) {
+                zoneNames = checkin.zone_ids
+                  .map((zoneId: string) => {
+                    const area = lifeAreas?.find((a: any) => a.id === zoneId);
+                    if (area?.name === 'Other' && checkin.zone_other) {
+                      return checkin.zone_other;
+                    }
+                    return area?.name;
+                  })
+                  .filter(Boolean)
+                  .join(', ');
+              }
+
+              return (
+                <div
+                  key={member.id}
+                  className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-4 bg-zinc-100/50 dark:bg-zinc-900/20"
+                >
+                  <div className="space-y-0">
+                    <div className="border border-zinc-400 dark:border-zinc-600 p-2 bg-white dark:bg-zinc-900/30 mb-0">
+                      <h4 className="font-semibold text-sm text-zinc-900 dark:text-zinc-200">
+                        <Link
+                          href={`/dashboard/profile/${member.id}`}
+                          className="hover:underline"
+                        >
+                          {member.display_name || member.full_name}
+                        </Link>
+                      </h4>
                     </div>
+                    {checkin ? (
+                      <>
+                        <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-2 bg-white dark:bg-zinc-900/30">
+                          <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                            {format(new Date(checkin.created_at), 'MMM d, h:mm a')}
+                          </p>
+                        </div>
+                        <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-2 bg-white dark:bg-zinc-900/30">
+                          <p className="text-xs text-foreground/80">
+                            <span className="font-medium text-zinc-700 dark:text-zinc-400">Zones:</span> {zoneNames}
+                          </p>
+                        </div>
+                        <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-2 bg-white dark:bg-zinc-900/30">
+                          <p className="text-xs text-foreground/80">
+                            <span className="font-medium text-zinc-700 dark:text-zinc-400">Feeling:</span> {checkin.status}
+                            {checkin.status_other && ` (${checkin.status_other})`}
+                          </p>
+                        </div>
+                        <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-2 bg-white dark:bg-zinc-900/30">
+                          <p className="text-xs text-foreground/80">
+                            <span className="font-medium text-zinc-700 dark:text-zinc-400">Needs:</span> {checkin.support_type === 'Other' ? checkin.support_type_other : checkin.support_type}
+                          </p>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-2 bg-white dark:bg-zinc-900/30">
+                        <p className="text-xs text-zinc-600 dark:text-zinc-400">No check-ins yet</p>
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
-              <Link
-                href="/dashboard/photos"
-                className="text-sm text-foreground/80 hover:text-foreground underline"
-              >
-                View all photos →
-              </Link>
-            </>
-          ) : (
-            <>
-              <p className="text-sm text-foreground/60 mb-3">
-                No photos yet.
-              </p>
-              <Link
-                href="/dashboard/photos"
-                className="text-sm text-foreground/80 hover:text-foreground underline"
-              >
-                Share a photo →
-              </Link>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Check-ins - All Members */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Check-ins</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {usersWithCheckins?.map((member: any) => {
-            const checkin = member.latestCheckin;
-
-            // Get zone names
-            let zoneNames = 'No zones';
-            if (checkin?.zone_ids && Array.isArray(checkin.zone_ids)) {
-              zoneNames = checkin.zone_ids
-                .map((zoneId: string) => {
-                  const area = lifeAreas?.find((a: any) => a.id === zoneId);
-                  if (area?.name === 'Other' && checkin.zone_other) {
-                    return checkin.zone_other;
-                  }
-                  return area?.name;
-                })
-                .filter(Boolean)
-                .join(', ');
-            }
-
-            return (
-              <div
-                key={member.id}
-                className="border border-foreground/20 rounded-lg p-4"
-              >
-                <div className="mb-3">
-                  <h3 className="font-semibold text-sm">
-                    <Link
-                      href={`/dashboard/profile/${member.id}`}
-                      className="hover:underline"
-                    >
-                      {member.display_name || member.full_name}
-                    </Link>
-                  </h3>
-                  {checkin ? (
-                    <>
-                      <p className="text-xs text-foreground/60 mt-1">
-                        {format(new Date(checkin.created_at), 'MMM d, h:mm a')}
-                      </p>
-                      <p className="text-xs text-foreground/60 mt-1">
-                        <span className="font-medium">Zones:</span> {zoneNames}
-                      </p>
-                      <p className="text-xs text-foreground/80 mt-2">
-                        <span className="font-medium">Feeling:</span> {checkin.status}
-                        {checkin.status_other && ` (${checkin.status_other})`}
-                      </p>
-                      <p className="text-xs text-foreground/80 mt-1">
-                        <span className="font-medium">Needs:</span> {checkin.support_type === 'Other' ? checkin.support_type_other : checkin.support_type}
-                      </p>
-                    </>
-                  ) : (
-                    <p className="text-xs text-foreground/60 mt-1">No check-ins yet</p>
-                  )}
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="border border-foreground/20 rounded-lg p-6">
-        <h3 className="font-semibold mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="border border-neutral-500 dark:border-neutral-600 p-6 bg-neutral-700/10 dark:bg-neutral-800/20">
+        <h3 className="font-semibold mb-4 text-neutral-800 dark:text-neutral-300">Quick Actions</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-0">
           <Link
             href="/dashboard/life-status"
-            className="border border-foreground/20 rounded-lg p-4 hover:bg-foreground/5 transition text-center"
+            className="border border-neutral-500 dark:border-neutral-600 p-4 hover:bg-neutral-700/20 dark:hover:bg-neutral-700/40 transition text-center bg-white dark:bg-neutral-900/30"
           >
-            <p className="font-medium text-sm">Post Check-in</p>
+            <p className="font-medium text-sm text-neutral-800 dark:text-neutral-300">Post Check-in</p>
           </Link>
           <Link
             href="/dashboard/questions"
-            className="border border-foreground/20 rounded-lg p-4 hover:bg-foreground/5 transition text-center"
+            className="border border-neutral-500 dark:border-neutral-600 border-l-0 p-4 hover:bg-neutral-700/20 dark:hover:bg-neutral-700/40 transition text-center bg-white dark:bg-neutral-900/30"
           >
-            <p className="font-medium text-sm">Pose a Question to The Six</p>
+            <p className="font-medium text-sm text-neutral-800 dark:text-neutral-300">Pose a Question to The Six</p>
           </Link>
           <Link
             href="/dashboard/photos"
-            className="border border-foreground/20 rounded-lg p-4 hover:bg-foreground/5 transition text-center"
+            className="border border-neutral-500 dark:border-neutral-600 border-l-0 p-4 hover:bg-neutral-700/20 dark:hover:bg-neutral-700/40 transition text-center bg-white dark:bg-neutral-900/30"
           >
-            <p className="font-medium text-sm">Share Photo</p>
+            <p className="font-medium text-sm text-neutral-800 dark:text-neutral-300">Share Photo</p>
           </Link>
         </div>
+      </div>
+
+      {/* Photos */}
+      <div className="border border-stone-500 dark:border-stone-600 p-6 bg-stone-700/10 dark:bg-stone-800/20">
+        <h3 className="font-semibold mb-3 text-stone-800 dark:text-stone-300">Photos</h3>
+        {recentPhotos && recentPhotos.length > 0 ? (
+          <>
+            <div className="space-y-0 mb-3">
+              {recentPhotos.map((photo: any) => (
+                <div key={photo.id} className="flex gap-3 border border-stone-500 dark:border-stone-600 p-2 bg-white dark:bg-stone-900/30">
+                  <img
+                    src={photo.photo_url}
+                    alt={photo.caption || 'Photo'}
+                    className="w-16 h-16 object-cover rounded flex-shrink-0 border-2 border-stone-500 dark:border-stone-600"
+                  />
+                  <div className="flex-1 min-w-0 text-sm">
+                    <p className="font-medium text-xs text-stone-800 dark:text-stone-300">
+                      {photo.user.display_name || photo.user.full_name}
+                    </p>
+                    <p className="text-xs text-foreground/60 truncate">
+                      {photo.caption || 'No caption'}
+                    </p>
+                    <p className="text-xs text-stone-600 dark:text-stone-400">
+                      {format(new Date(photo.created_at), 'MMM d, h:mm a')}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Link
+              href="/dashboard/photos"
+              className="text-sm text-stone-700 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 underline font-medium"
+            >
+              View all photos →
+            </Link>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-stone-600 dark:text-stone-400 mb-3">
+              No photos yet.
+            </p>
+            <Link
+              href="/dashboard/photos"
+              className="text-sm text-stone-700 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 underline font-medium"
+            >
+              Share a photo →
+            </Link>
+          </>
+        )}
       </div>
     </div>
   );

@@ -61,27 +61,27 @@ export function GroupMessageForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-1.5">
+    <form onSubmit={handleSubmit} className="space-y-0 border border-neutral-500 dark:border-neutral-600 bg-neutral-200 dark:bg-neutral-800/40">
       {error && (
-        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-1.5 py-0.5 rounded text-xs">
+        <div className="bg-red-50 dark:bg-red-950 border-b border-neutral-500 dark:border-neutral-600 text-red-800 dark:text-red-200 px-2 py-1 text-xs">
           {error}
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex gap-0">
         <textarea
           ref={textareaRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Message The Six"
           rows={3}
-          className="flex-1 px-2 py-1 border border-foreground/20 rounded focus:outline-none focus:ring-1 focus:ring-foreground/40 bg-background text-xs resize-none"
+          className="flex-1 px-3 py-2 border-r border-neutral-500 dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-neutral-600 bg-white dark:bg-neutral-900/30 text-sm resize-none"
           disabled={loading}
         />
         <button
           type="submit"
           disabled={loading || !content.trim()}
-          className="py-1 px-3 bg-foreground text-background font-medium rounded hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-foreground disabled:opacity-50 disabled:cursor-not-allowed transition text-xs"
+          className="py-2 px-4 bg-neutral-700 hover:bg-neutral-800 text-white font-medium focus:outline-none focus:ring-2 focus:ring-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
         >
           {loading ? '...' : 'Send'}
         </button>

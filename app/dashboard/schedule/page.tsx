@@ -53,23 +53,25 @@ export default async function SchedulePage() {
       </div>
 
       {/* Create New Event */}
-      <div className="border border-foreground/20 rounded-lg p-4">
-        <h2 className="text-lg font-semibold mb-3">Propose New Event</h2>
+      <div className="border border-neutral-500 dark:border-neutral-600 p-4 bg-neutral-700/10 dark:bg-neutral-800/20">
+        <h2 className="text-lg font-semibold mb-3 text-neutral-800 dark:text-neutral-300">Propose New Event</h2>
         <EventForm />
       </div>
 
       {/* Upcoming Events */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Upcoming Events</h2>
+        <h2 className="text-xl font-semibold mb-0 px-4 py-3 bg-stone-200 dark:bg-stone-800/40 border border-stone-500 dark:border-stone-600 text-stone-900 dark:text-stone-200">Upcoming Events</h2>
         {upcomingEvents && upcomingEvents.length > 0 ? (
-          <div className="space-y-3">
-            {upcomingEvents.map((event) => (
-              <EventCard key={event.id} event={event} totalUsers={totalUsers || 4} currentUserId={user.id} />
+          <div className="space-y-0 border border-stone-500 dark:border-stone-600 border-t-0">
+            {upcomingEvents.map((event, index) => (
+              <div key={event.id} className={index > 0 ? 'border-t border-stone-500 dark:border-stone-600' : ''}>
+                <EventCard event={event} totalUsers={totalUsers || 4} currentUserId={user.id} />
+              </div>
             ))}
           </div>
         ) : (
-          <div className="border border-foreground/20 rounded-lg p-8 text-center">
-            <p className="text-foreground/60">
+          <div className="border border-stone-500 dark:border-stone-600 border-t-0 p-8 text-center bg-stone-700/5 dark:bg-stone-800/20">
+            <p className="text-stone-700 dark:text-stone-400">
               No upcoming events. Propose one above!
             </p>
           </div>
@@ -79,10 +81,12 @@ export default async function SchedulePage() {
       {/* Past Events */}
       {pastEvents && pastEvents.length > 0 && (
         <div>
-          <h2 className="text-xl font-semibold mb-4">Past Events</h2>
-          <div className="space-y-3">
-            {pastEvents.map((event) => (
-              <EventCard key={event.id} event={event} totalUsers={totalUsers || 4} currentUserId={user.id} />
+          <h2 className="text-xl font-semibold mb-0 px-4 py-3 bg-neutral-300 dark:bg-neutral-800 border border-neutral-500 dark:border-neutral-600 text-neutral-900 dark:text-neutral-300">Past Events</h2>
+          <div className="space-y-0 border border-neutral-500 dark:border-neutral-600 border-t-0 opacity-75">
+            {pastEvents.map((event, index) => (
+              <div key={event.id} className={index > 0 ? 'border-t border-neutral-500 dark:border-neutral-600' : ''}>
+                <EventCard event={event} totalUsers={totalUsers || 4} currentUserId={user.id} />
+              </div>
             ))}
           </div>
         </div>
