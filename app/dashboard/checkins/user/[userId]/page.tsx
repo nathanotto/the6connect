@@ -42,6 +42,12 @@ export default async function MemberLifeStatusPage({
     .select('*')
     .order('sort_order', { ascending: true });
 
+  // Fetch all users for read status
+  const { data: allUsers } = await supabase
+    .from('users')
+    .select('id, full_name, display_name')
+    .order('full_name', { ascending: true });
+
   // Fetch member's recent check-ins
   const { data: recentCheckins } = await supabase
     .from('life_status_updates')
@@ -54,7 +60,7 @@ export default async function MemberLifeStatusPage({
     <div className="space-y-8">
       <div>
         <Link
-          href="/dashboard/life-status"
+          href="/dashboard/checkins"
           className="text-sm text-foreground/60 hover:text-foreground mb-2 inline-block"
         >
           ← Back to Check-ins
@@ -79,6 +85,7 @@ export default async function MemberLifeStatusPage({
                 member={member}
                 lifeAreas={lifeAreas || []}
                 currentUserId={user.id}
+                allUsers={allUsers || []}
               />
             ))}
           </div>

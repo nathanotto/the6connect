@@ -35,9 +35,14 @@ interface CheckinCardProps {
   };
   lifeAreas: LifeArea[];
   currentUserId: string;
+  allUsers: Array<{
+    id: string;
+    full_name: string;
+    display_name?: string;
+  }>;
 }
 
-export function CheckinCard({ checkin, member, lifeAreas, currentUserId }: CheckinCardProps) {
+export function CheckinCard({ checkin, member, lifeAreas, currentUserId, allUsers }: CheckinCardProps) {
   const router = useRouter();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -45,6 +50,7 @@ export function CheckinCard({ checkin, member, lifeAreas, currentUserId }: Check
   const [showComments, setShowComments] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [readByUsers, setReadByUsers] = useState<string[]>([]);
   const [editFormData, setEditFormData] = useState({
     zone_ids: checkin?.zone_ids || [],
     zone_other: checkin?.zone_other || '',
@@ -62,6 +68,53 @@ export function CheckinCard({ checkin, member, lifeAreas, currentUserId }: Check
       fetchComments();
     }
   }, [checkin, showComments]);
+
+  // Fetch read status for this check-in and mark as read
+  useEffect(() => {
+    if (checkin) {
+      fetchReadStatus();
+      markAsRead();
+    }
+  }, [checkin]);
+
+  const fetchReadStatus = async () => {
+    if (!checkin) return;
+
+    try {
+      const response = await fetch(`/api/checkin-reads?checkinId=${checkin.id}`);
+      const result = await response.json();
+      if (result.data) {
+        setReadByUsers(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch read status:', error);
+      // Default: mark the author as having read it
+      setReadByUsers([checkin.user_id]);
+    }
+  };
+
+  const markAsRead = async () => {
+    if (!checkin) return;
+
+    try {
+      await fetch('/api/checkin-reads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          checkin_id: checkin.id,
+        }),
+      });
+
+      // Update local state
+      if (!readByUsers.includes(currentUserId)) {
+        setReadByUsers([...readByUsers, currentUserId]);
+      }
+    } catch (error) {
+      console.error('Failed to mark as read:', error);
+    }
+  };
 
   const fetchComments = async () => {
     if (!checkin) return;
@@ -389,6 +442,23 @@ export function CheckinCard({ checkin, member, lifeAreas, currentUserId }: Check
                 <p className="text-foreground/90">{checkin.notes}</p>
               </div>
             )}
+          </div>
+
+          {/* Read status indicator */}
+          <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-3 text-sm bg-white dark:bg-zinc-900/30">
+            <span className="text-zinc-700 dark:text-zinc-400">Read: </span>
+            {allUsers.map((user, index) => {
+              const hasRead = readByUsers.includes(user.id);
+              const displayName = user.display_name || user.full_name;
+              return (
+                <span key={user.id}>
+                  <span className={hasRead ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}>
+                    {displayName}
+                  </span>
+                  {index < allUsers.length - 1 && ', '}
+                </span>
+              );
+            })}
           </div>
 
           {/* Comments toggle, Edit, and Delete buttons */}

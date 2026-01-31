@@ -26,10 +26,10 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     zone_ids: [] as string[],
-    zone_other: '',
-    statuses: [] as string[],
+    zone_other: 'General checkin',
+    statuses: ['Typical'] as string[],
     status_other: '',
-    support_type: '',
+    support_type: 'Just read this',
     support_type_other: '',
     notes: '',
   });
@@ -37,9 +37,9 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate at least one zone is selected
-    if (formData.zone_ids.length === 0) {
-      setError('Please select at least one zone');
+    // Validate topic is not empty
+    if (!formData.zone_other.trim()) {
+      setError('Please enter a topic');
       return;
     }
 
@@ -70,10 +70,10 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
       // Reset form
       setFormData({
         zone_ids: [],
-        zone_other: '',
-        statuses: [],
+        zone_other: 'General checkin',
+        statuses: ['Typical'],
         status_other: '',
-        support_type: '',
+        support_type: 'Just read this',
         support_type_other: '',
         notes: '',
       });
@@ -89,22 +89,18 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
 
   // Color mapping for feelings - masculine/serious palette
   const feelingColors: Record<string, string> = {
-    'Anxious': 'border-yellow-700 dark:border-yellow-600 hover:bg-yellow-900/20 dark:hover:bg-yellow-900/30',
-    'Pissed Off': 'border-red-800 dark:border-red-700 hover:bg-red-900/20 dark:hover:bg-red-900/30',
-    'Meh': 'border-gray-600 dark:border-gray-500 hover:bg-gray-700/20 dark:hover:bg-gray-700/30',
-    'Optimistic': 'border-blue-700 dark:border-blue-600 hover:bg-blue-900/20 dark:hover:bg-blue-900/30',
-    'Solid': 'border-green-700 dark:border-green-600 hover:bg-green-900/20 dark:hover:bg-green-900/30',
-    'On Fire': 'border-orange-700 dark:border-orange-600 hover:bg-orange-900/20 dark:hover:bg-orange-900/30',
+    'Good': 'border-green-700 dark:border-green-600 hover:bg-green-900/20 dark:hover:bg-green-900/30',
+    'Bad': 'border-red-800 dark:border-red-700 hover:bg-red-900/20 dark:hover:bg-red-900/30',
+    'Typical': 'border-gray-600 dark:border-gray-500 hover:bg-gray-700/20 dark:hover:bg-gray-700/30',
+    'Combo': 'border-blue-700 dark:border-blue-600 hover:bg-blue-900/20 dark:hover:bg-blue-900/30',
     'Other': 'border-slate-600 dark:border-slate-500 hover:bg-slate-700/20 dark:hover:bg-slate-700/30',
   };
 
   const feelingSelectedColors: Record<string, string> = {
-    'Anxious': 'bg-yellow-800/20 dark:bg-yellow-800/30 border-yellow-600 dark:border-yellow-500',
-    'Pissed Off': 'bg-red-800/20 dark:bg-red-800/30 border-red-600 dark:border-red-500',
-    'Meh': 'bg-gray-700/20 dark:bg-gray-600/30 border-gray-500 dark:border-gray-400',
-    'Optimistic': 'bg-blue-800/20 dark:bg-blue-800/30 border-blue-600 dark:border-blue-500',
-    'Solid': 'bg-green-800/20 dark:bg-green-800/30 border-green-600 dark:border-green-500',
-    'On Fire': 'bg-orange-800/20 dark:bg-orange-800/30 border-orange-600 dark:border-orange-500',
+    'Good': 'bg-green-800/20 dark:bg-green-800/30 border-green-600 dark:border-green-500',
+    'Bad': 'bg-red-800/20 dark:bg-red-800/30 border-red-600 dark:border-red-500',
+    'Typical': 'bg-gray-700/20 dark:bg-gray-600/30 border-gray-500 dark:border-gray-400',
+    'Combo': 'bg-blue-800/20 dark:bg-blue-800/30 border-blue-600 dark:border-blue-500',
     'Other': 'bg-slate-700/20 dark:bg-slate-600/30 border-slate-500 dark:border-slate-400',
   };
 
@@ -116,49 +112,20 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
         </div>
       )}
 
-      {/* Zone Selection */}
+      {/* Topic */}
       <div className="border border-slate-500 dark:border-slate-600 p-3 bg-slate-700/10 dark:bg-slate-800/20">
         <label className="block text-sm font-medium mb-2 text-slate-800 dark:text-slate-300">
-          Zone * (select at least one)
+          Topic *
         </label>
-        <div className="grid grid-cols-3 gap-0">
-          {lifeAreas.map((area) => (
-            <label
-              key={area.id}
-              className={`flex items-center gap-1.5 cursor-pointer border p-2 transition ${
-                formData.zone_ids.includes(area.id)
-                  ? 'bg-slate-700/20 dark:bg-slate-700/40 border-slate-600 dark:border-slate-500'
-                  : 'border-slate-500 dark:border-slate-600 hover:bg-slate-700/10 dark:hover:bg-slate-700/20'
-              }`}
-            >
-              <input
-                type="checkbox"
-                value={area.id}
-                checked={formData.zone_ids.includes(area.id)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setFormData({ ...formData, zone_ids: [...formData.zone_ids, area.id] });
-                  } else {
-                    setFormData({ ...formData, zone_ids: formData.zone_ids.filter(id => id !== area.id) });
-                  }
-                }}
-                className="w-4 h-4 accent-slate-700"
-              />
-              <span className="text-sm">{area.name}</span>
-            </label>
-          ))}
-        </div>
-        {formData.zone_ids.includes(lifeAreas.find(a => a.name === 'Other')?.id || '') && (
-          <input
-            type="text"
-            maxLength={20}
-            value={formData.zone_other}
-            onChange={(e) => setFormData({ ...formData, zone_other: e.target.value })}
-            placeholder="What zone?"
-            required
-            className="w-full mt-2 px-3 py-2 border border-slate-500 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-600 bg-background text-sm"
-          />
-        )}
+        <input
+          type="text"
+          maxLength={50}
+          value={formData.zone_other}
+          onChange={(e) => setFormData({ ...formData, zone_other: e.target.value })}
+          placeholder="General checkin"
+          required
+          className="w-full px-3 py-2 border border-slate-500 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-600 bg-background text-sm"
+        />
       </div>
 
       {/* I'm feeling... */}
@@ -167,7 +134,7 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
           I'm feeling... * (select at least one)
         </label>
         <div className="grid grid-cols-3 gap-0">
-          {['Anxious', 'Pissed Off', 'Meh', 'Optimistic', 'Solid', 'On Fire', 'Other'].map((feeling) => (
+          {['Good', 'Bad', 'Typical', 'Combo', 'Other'].map((feeling) => (
             <label
               key={feeling}
               className={`flex items-center gap-1.5 cursor-pointer border p-2 transition ${
@@ -211,7 +178,7 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
           I want you to... *
         </label>
         <div className="flex flex-wrap gap-2">
-          {['Listen', 'Support', 'Advise', 'Hug Me', 'Call me', 'Other'].map((option) => (
+          {['Just read this', 'Listen', 'Respond', 'Be supportive', 'Advise', 'Other'].map((option) => (
             <label
               key={option}
               className={`flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-md border transition ${

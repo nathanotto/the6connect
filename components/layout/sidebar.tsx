@@ -46,7 +46,7 @@ export function Sidebar({ user, profile }: SidebarProps) {
   const navigation = [
     { name: 'Home', href: '/dashboard', icon: 'Home' },
     { name: 'Messages', href: '/dashboard/messages', icon: 'MessageSquare' },
-    { name: 'Check-ins', href: '/dashboard/life-status', icon: 'Activity' },
+    { name: 'Check-ins', href: '/dashboard/checkins', icon: 'Activity' },
     { name: 'Questions', href: '/dashboard/questions', icon: 'HelpCircle' },
     { name: 'The Six Pics', href: '/dashboard/photos', icon: 'Image' },
     { name: 'Meetings', href: '/dashboard/schedule', icon: 'Calendar' },
@@ -97,7 +97,7 @@ export function Sidebar({ user, profile }: SidebarProps) {
           <p className="text-sm opacity-60 mt-1 italic">{inspirationalMessage}</p>
         </div>
 
-        <nav className="flex-1 space-y-1">
+        <nav className="space-y-1">
           {navigation.map((item) => {
             // Special handling for Overview - only match exactly /dashboard
             const isActive = item.href === '/dashboard'
@@ -120,24 +120,24 @@ export function Sidebar({ user, profile }: SidebarProps) {
           })}
         </nav>
 
-        <div className="border-t border-background/20 pt-4 space-y-2">
+        <div className="border-t border-background/20 mt-2 pt-2 space-y-2">
           <Link
             href={`/dashboard/profile/${user.id}`}
             onClick={closeMobileMenu}
-            className="block px-4 py-2 rounded-lg hover:bg-background/10 transition"
+            className="block pl-6 pr-4 py-2 rounded-lg hover:bg-background/10 transition text-sm"
           >
-            {profile?.display_name || profile?.full_name || 'Profile'}
+            Profile
           </Link>
           <Link
             href="/dashboard/settings"
             onClick={closeMobileMenu}
-            className="block px-4 py-2 rounded-lg hover:bg-background/10 transition"
+            className="block pl-6 pr-4 py-2 rounded-lg hover:bg-background/10 transition text-sm"
           >
             ⚙️ Settings
           </Link>
           <button
             onClick={handleSignOut}
-            className="w-full text-left px-4 py-2 rounded-lg hover:bg-background/10 transition"
+            className="w-full text-left pl-6 pr-4 py-2 rounded-lg hover:bg-background/10 transition text-sm"
           >
             Sign Out
           </button>

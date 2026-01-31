@@ -133,7 +133,9 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
         {/* Messages */}
         <div className="border border-neutral-500 dark:border-neutral-600 p-6 bg-neutral-700/10 dark:bg-neutral-800/20">
-          <h3 className="font-semibold mb-3 text-neutral-800 dark:text-neutral-300">Messages</h3>
+          <Link href="/dashboard/messages">
+            <h3 className="font-semibold mb-3 text-neutral-800 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 cursor-pointer transition">Messages</h3>
+          </Link>
           <div className="mb-4">
             <GroupMessageForm />
           </div>
@@ -180,7 +182,9 @@ export default async function DashboardPage() {
 
         {/* Check-ins - All Members */}
         <div className="border border-zinc-400 dark:border-zinc-600 border-t lg:border-t border-l-0 lg:border-l-0 bg-zinc-100/50 dark:bg-zinc-900/20">
-          <h3 className="font-semibold px-4 py-3 bg-zinc-200 dark:bg-zinc-800/40 border-b border-zinc-400 dark:border-zinc-600 text-zinc-900 dark:text-zinc-200">Check-ins</h3>
+          <Link href="/dashboard/checkins">
+            <h3 className="font-semibold px-4 py-3 bg-zinc-200 dark:bg-zinc-800/40 border-b border-zinc-400 dark:border-zinc-600 text-zinc-900 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-zinc-50 cursor-pointer transition">Check-ins</h3>
+          </Link>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
             {usersWithCheckins?.map((member: any, index: number) => {
               const checkin = member.latestCheckin;
@@ -258,7 +262,7 @@ export default async function DashboardPage() {
         <h3 className="font-semibold mb-4 text-neutral-800 dark:text-neutral-300">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-0">
           <Link
-            href="/dashboard/life-status"
+            href="/dashboard/checkins"
             className="border border-neutral-500 dark:border-neutral-600 p-4 hover:bg-neutral-700/20 dark:hover:bg-neutral-700/40 transition text-center bg-white dark:bg-neutral-900/30"
           >
             <p className="font-medium text-sm text-neutral-800 dark:text-neutral-300">Post Check-in</p>
@@ -280,7 +284,9 @@ export default async function DashboardPage() {
 
       {/* Photos */}
       <div className="border border-stone-500 dark:border-stone-600 p-6 bg-stone-700/10 dark:bg-stone-800/20">
-        <h3 className="font-semibold mb-3 text-stone-800 dark:text-stone-300">Photos</h3>
+        <Link href="/dashboard/photos">
+          <h3 className="font-semibold mb-3 text-stone-800 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 cursor-pointer transition">Photos</h3>
+        </Link>
         {recentPhotos && recentPhotos.length > 0 ? (
           <>
             <div className="space-y-0 mb-3">

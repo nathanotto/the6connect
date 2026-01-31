@@ -68,7 +68,9 @@ export default async function MessagesPage() {
       {/* Group Messages */}
       <div className="border border-neutral-500 dark:border-neutral-600 p-0 bg-neutral-700/10 dark:bg-neutral-800/20">
         <div className="flex items-center justify-between border-b border-neutral-500 dark:border-neutral-600 p-4 bg-neutral-200 dark:bg-neutral-800/40">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-200">Group Chat</h2>
+          <Link href="/dashboard/messages/group">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-neutral-50 cursor-pointer transition">Group Chat</h2>
+          </Link>
           <Link
             href="/dashboard/messages/group"
             className="text-sm text-neutral-700 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200"
@@ -97,9 +99,11 @@ export default async function MessagesPage() {
               className={`p-0 bg-stone-700/5 dark:bg-stone-800/20 ${index > 0 ? 'border-t-2 border-stone-600 dark:border-stone-500' : ''}`}
             >
               <div className="flex items-center justify-between border-b border-stone-500 dark:border-stone-600 p-4 bg-stone-200 dark:bg-stone-800/40">
-                <h3 className="font-semibold text-sm text-stone-900 dark:text-stone-200">
-                  {member.display_name || member.full_name}
-                </h3>
+                <Link href={`/dashboard/messages/${member.id}`}>
+                  <h3 className="font-semibold text-sm text-stone-900 dark:text-stone-200 hover:text-stone-950 dark:hover:text-stone-50 cursor-pointer transition">
+                    {member.display_name || member.full_name}
+                  </h3>
+                </Link>
                 <Link
                   href={`/dashboard/messages/${member.id}`}
                   className="text-xs text-stone-700 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200"
