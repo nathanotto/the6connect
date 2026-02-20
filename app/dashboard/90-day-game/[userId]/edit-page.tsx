@@ -29,6 +29,8 @@ type Props = {
   endDate: string;
 };
 
+const INNER_GAME_CATEGORIES = ['belief', 'value', 'habit', 'motivator', 'strength', 'accountability'];
+
 export function EditableGameDetail({
   gameId,
   userId,
@@ -51,6 +53,14 @@ export function EditableGameDetail({
   const [obts, setObts] = useState(gameData.obts);
 
   const [saving, setSaving] = useState(false);
+
+  // New inner game item form state
+  const [newLimitingCategory, setNewLimitingCategory] = useState('belief');
+  const [newLimitingDesc, setNewLimitingDesc] = useState('');
+  const [newEmpoweringCategory, setNewEmpoweringCategory] = useState('belief');
+  const [newEmpoweringDesc, setNewEmpoweringDesc] = useState('');
+  const [showAddLimiting, setShowAddLimiting] = useState(false);
+  const [showAddEmpowering, setShowAddEmpowering] = useState(false);
 
   // Score calculations
   const calculateWeightedScore = (items: Array<{ weight_percentage: number; completion_percentage: number }>) => {
@@ -164,6 +174,44 @@ export function EditableGameDetail({
     }
   };
 
+  const addKeyResult = async () => {
+    if (!isOwnGame) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/90-day-game/key-results', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameId,
+          description: 'New key result',
+          weight_percentage: 0,
+          completion_percentage: 0,
+          notes: '',
+          sort_order: keyResults.length,
+        }),
+      });
+      if (res.ok) {
+        const newKr = await res.json();
+        setKeyResults([...keyResults, newKr]);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteKeyResult = async (id: string) => {
+    if (!isOwnGame) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/90-day-game/key-results?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setKeyResults(keyResults.filter((k) => k.id !== id));
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const saveProject = async (project: any) => {
     if (!isOwnGame) return;
     setSaving(true);
@@ -176,6 +224,44 @@ export function EditableGameDetail({
       if (res.ok) {
         const updated = await res.json();
         setProjects(projects.map((p) => (p.id === updated.id ? updated : p)));
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addProject = async () => {
+    if (!isOwnGame) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/90-day-game/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameId,
+          description: 'New project',
+          weight_percentage: 0,
+          completion_percentage: 0,
+          notes: '',
+          sort_order: projects.length,
+        }),
+      });
+      if (res.ok) {
+        const newProject = await res.json();
+        setProjects([...projects, newProject]);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteProject = async (id: string) => {
+    if (!isOwnGame) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/90-day-game/projects?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setProjects(projects.filter((p) => p.id !== id));
       }
     } finally {
       setSaving(false);
@@ -204,6 +290,57 @@ export function EditableGameDetail({
     }
   };
 
+  const addInnerGameItem = async (item_type: 'limiting' | 'empowering', category: string, description: string) => {
+    if (!isOwnGame || !description.trim()) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/90-day-game/inner-game', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameId,
+          item_type,
+          category,
+          description,
+          rating: 3,
+          notes: '',
+          sort_order: item_type === 'limiting' ? innerGameLimiting.length : innerGameEmpowering.length,
+        }),
+      });
+      if (res.ok) {
+        const newItem = await res.json();
+        if (item_type === 'limiting') {
+          setInnerGameLimiting([...innerGameLimiting, newItem]);
+          setNewLimitingDesc('');
+          setShowAddLimiting(false);
+        } else {
+          setInnerGameEmpowering([...innerGameEmpowering, newItem]);
+          setNewEmpoweringDesc('');
+          setShowAddEmpowering(false);
+        }
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteInnerGameItem = async (id: string, item_type: 'limiting' | 'empowering') => {
+    if (!isOwnGame) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/90-day-game/inner-game?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        if (item_type === 'limiting') {
+          setInnerGameLimiting(innerGameLimiting.filter((i) => i.id !== id));
+        } else {
+          setInnerGameEmpowering(innerGameEmpowering.filter((i) => i.id !== id));
+        }
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const saveOBT = async (obt: any) => {
     if (!isOwnGame) return;
     setSaving(true);
@@ -215,7 +352,12 @@ export function EditableGameDetail({
       });
       if (res.ok) {
         const updated = await res.json();
-        setObts(obts.map((o) => (o.week_number === updated.week_number ? updated : o)));
+        setObts((prev) => {
+          const exists = prev.find((o) => o.week_number === updated.week_number);
+          return exists
+            ? prev.map((o) => (o.week_number === updated.week_number ? updated : o))
+            : [...prev, updated];
+        });
       }
     } finally {
       setSaving(false);
@@ -350,16 +492,27 @@ export function EditableGameDetail({
         <div className="space-y-3">
           {keyResults?.map((kr) => (
             <div key={kr.id} className="border border-foreground/10 rounded p-3">
-              <textarea
-                value={kr.description}
-                onChange={(e) => {
-                  setKeyResults(keyResults.map((k) => (k.id === kr.id ? { ...k, description: e.target.value } : k)));
-                }}
-                onBlur={() => saveKeyResult(kr)}
-                disabled={!isOwnGame}
-                className="w-full text-sm bg-transparent mb-2 border border-foreground/10 rounded p-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
-                rows={2}
-              />
+              <div className="flex items-start gap-2 mb-2">
+                <textarea
+                  value={kr.description}
+                  onChange={(e) => {
+                    setKeyResults(keyResults.map((k) => (k.id === kr.id ? { ...k, description: e.target.value } : k)));
+                  }}
+                  onBlur={() => saveKeyResult(kr)}
+                  disabled={!isOwnGame}
+                  className="flex-1 text-sm bg-transparent border border-foreground/10 rounded p-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
+                  rows={2}
+                />
+                {isOwnGame && (
+                  <button
+                    onClick={() => deleteKeyResult(kr.id)}
+                    className="text-foreground/30 hover:text-red-500 text-lg leading-none pt-2 shrink-0"
+                    title="Delete"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
               <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3 text-sm">
                 <label className="flex items-center gap-2 min-h-[44px]">
                   <span className="text-xs md:text-sm">Weight:</span>
@@ -410,6 +563,15 @@ export function EditableGameDetail({
             </div>
           ))}
         </div>
+        {isOwnGame && (
+          <button
+            onClick={addKeyResult}
+            disabled={saving}
+            className="mt-3 text-sm text-foreground/50 hover:text-foreground border border-dashed border-foreground/20 hover:border-foreground/40 rounded px-4 py-2 w-full disabled:opacity-50"
+          >
+            + Add Key Result
+          </button>
+        )}
       </div>
 
       {/* Projects */}
@@ -421,18 +583,29 @@ export function EditableGameDetail({
         <div className="space-y-3">
           {projects?.map((project) => (
             <div key={project.id} className="border border-foreground/10 rounded p-3">
-              <textarea
-                value={project.description}
-                onChange={(e) => {
-                  setProjects(
-                    projects.map((p) => (p.id === project.id ? { ...p, description: e.target.value } : p))
-                  );
-                }}
-                onBlur={() => saveProject(project)}
-                disabled={!isOwnGame}
-                className="w-full text-sm bg-transparent mb-2 border border-foreground/10 rounded p-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
-                rows={3}
-              />
+              <div className="flex items-start gap-2 mb-2">
+                <textarea
+                  value={project.description}
+                  onChange={(e) => {
+                    setProjects(
+                      projects.map((p) => (p.id === project.id ? { ...p, description: e.target.value } : p))
+                    );
+                  }}
+                  onBlur={() => saveProject(project)}
+                  disabled={!isOwnGame}
+                  className="flex-1 text-sm bg-transparent border border-foreground/10 rounded p-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
+                  rows={3}
+                />
+                {isOwnGame && (
+                  <button
+                    onClick={() => deleteProject(project.id)}
+                    className="text-foreground/30 hover:text-red-500 text-lg leading-none pt-2 shrink-0"
+                    title="Delete"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
               <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3 text-sm">
                 <label className="flex items-center gap-2 min-h-[44px]">
                   <span className="text-xs md:text-sm">Weight:</span>
@@ -483,15 +656,25 @@ export function EditableGameDetail({
             </div>
           ))}
         </div>
+        {isOwnGame && (
+          <button
+            onClick={addProject}
+            disabled={saving}
+            className="mt-3 text-sm text-foreground/50 hover:text-foreground border border-dashed border-foreground/20 hover:border-foreground/40 rounded px-4 py-2 w-full disabled:opacity-50"
+          >
+            + Add Project
+          </button>
+        )}
       </div>
 
-      {/* Inner Game - simplified inline editing */}
+      {/* Inner Game */}
       <div className="border border-foreground/20 rounded-lg p-4 md:p-6">
         <div className="flex items-center justify-between gap-3 mb-6">
           <h2 className="text-lg md:text-xl font-semibold">Inner Game</h2>
           <span className="text-base md:text-lg font-bold">{innerGameScore}%</span>
         </div>
 
+        {/* Limiting */}
         <div className="mb-6">
           <h3 className="text-base md:text-lg font-semibold text-red-500/80 mb-3">Performance Limiting Box</h3>
           <div className="space-y-2">
@@ -526,13 +709,72 @@ export function EditableGameDetail({
                       className="w-14 text-center font-bold bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50"
                     />
                     <span className="text-sm">/5</span>
+                    {isOwnGame && (
+                      <button
+                        onClick={() => deleteInnerGameItem(item.id, 'limiting')}
+                        className="text-foreground/30 hover:text-red-500 text-lg leading-none"
+                        title="Delete"
+                      >
+                        ×
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
             ))}
           </div>
+          {isOwnGame && (
+            <div className="mt-2">
+              {!showAddLimiting ? (
+                <button
+                  onClick={() => setShowAddLimiting(true)}
+                  className="text-sm text-foreground/50 hover:text-foreground border border-dashed border-red-500/20 hover:border-red-500/40 rounded px-4 py-2 w-full"
+                >
+                  + Add Limiting Item
+                </button>
+              ) : (
+                <div className="border border-red-500/20 rounded p-3 space-y-2">
+                  <div className="flex gap-2">
+                    <select
+                      value={newLimitingCategory}
+                      onChange={(e) => setNewLimitingCategory(e.target.value)}
+                      className="text-sm bg-transparent border border-foreground/20 rounded px-2 py-2 capitalize"
+                    >
+                      {INNER_GAME_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      value={newLimitingDesc}
+                      onChange={(e) => setNewLimitingDesc(e.target.value)}
+                      placeholder="Description..."
+                      className="flex-1 text-sm bg-transparent border border-foreground/20 rounded px-2 py-2"
+                      onKeyDown={(e) => e.key === 'Enter' && addInnerGameItem('limiting', newLimitingCategory, newLimitingDesc)}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => addInnerGameItem('limiting', newLimitingCategory, newLimitingDesc)}
+                      disabled={saving || !newLimitingDesc.trim()}
+                      className="text-sm px-4 py-2 bg-foreground text-background rounded disabled:opacity-50"
+                    >
+                      Add
+                    </button>
+                    <button
+                      onClick={() => { setShowAddLimiting(false); setNewLimitingDesc(''); }}
+                      className="text-sm px-4 py-2 border border-foreground/20 rounded hover:bg-foreground/5"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
+        {/* Empowering */}
         <div>
           <h3 className="text-base md:text-lg font-semibold text-green-500/80 mb-3">Performance Empowering Platform</h3>
           <div className="space-y-2">
@@ -567,68 +809,151 @@ export function EditableGameDetail({
                       className="w-14 text-center font-bold bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50"
                     />
                     <span className="text-sm">/5</span>
+                    {isOwnGame && (
+                      <button
+                        onClick={() => deleteInnerGameItem(item.id, 'empowering')}
+                        className="text-foreground/30 hover:text-red-500 text-lg leading-none"
+                        title="Delete"
+                      >
+                        ×
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
             ))}
           </div>
+          {isOwnGame && (
+            <div className="mt-2">
+              {!showAddEmpowering ? (
+                <button
+                  onClick={() => setShowAddEmpowering(true)}
+                  className="text-sm text-foreground/50 hover:text-foreground border border-dashed border-green-500/20 hover:border-green-500/40 rounded px-4 py-2 w-full"
+                >
+                  + Add Empowering Item
+                </button>
+              ) : (
+                <div className="border border-green-500/20 rounded p-3 space-y-2">
+                  <div className="flex gap-2">
+                    <select
+                      value={newEmpoweringCategory}
+                      onChange={(e) => setNewEmpoweringCategory(e.target.value)}
+                      className="text-sm bg-transparent border border-foreground/20 rounded px-2 py-2 capitalize"
+                    >
+                      {INNER_GAME_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      value={newEmpoweringDesc}
+                      onChange={(e) => setNewEmpoweringDesc(e.target.value)}
+                      placeholder="Description..."
+                      className="flex-1 text-sm bg-transparent border border-foreground/20 rounded px-2 py-2"
+                      onKeyDown={(e) => e.key === 'Enter' && addInnerGameItem('empowering', newEmpoweringCategory, newEmpoweringDesc)}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => addInnerGameItem('empowering', newEmpoweringCategory, newEmpoweringDesc)}
+                      disabled={saving || !newEmpoweringDesc.trim()}
+                      className="text-sm px-4 py-2 bg-foreground text-background rounded disabled:opacity-50"
+                    >
+                      Add
+                    </button>
+                    <button
+                      onClick={() => { setShowAddEmpowering(false); setNewEmpoweringDesc(''); }}
+                      className="text-sm px-4 py-2 border border-foreground/20 rounded hover:bg-foreground/5"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* One Big Things */}
+      {/* One Big Things — always show all 6 weeks */}
       <div className="border border-foreground/20 rounded-lg p-4 md:p-6">
         <div className="flex items-center justify-between gap-3 mb-4">
           <h2 className="text-lg md:text-xl font-semibold">Bi-Weekly One Big Things</h2>
           <span className="text-base md:text-lg font-bold">{obtsScore}%</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {obts?.map((obt) => (
-            <div
-              key={obt.week_number}
-              className={`border rounded-lg p-3 ${
-                obt.completion_percentage === 100 ? 'border-green-500/40 bg-green-500/5' : 'border-foreground/20'
-              }`}
-            >
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-xs font-semibold text-foreground/60">WEEK {obt.week_number}</span>
-                <select
-                  value={obt.completion_percentage}
+          {[1, 2, 3, 4, 5, 6].map((weekNum) => {
+            const obt = obts?.find((o) => o.week_number === weekNum) || {
+              week_number: weekNum,
+              description: '',
+              completion_percentage: 0,
+              notes: '',
+            };
+            return (
+              <div
+                key={weekNum}
+                className={`border rounded-lg p-3 ${
+                  obt.completion_percentage === 100 ? 'border-green-500/40 bg-green-500/5' : 'border-foreground/20'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="text-xs font-semibold text-foreground/60">WEEK {weekNum}</span>
+                  <select
+                    value={obt.completion_percentage}
+                    onChange={(e) => {
+                      const updated = { ...obt, completion_percentage: parseInt(e.target.value) };
+                      setObts((prev) => {
+                        const exists = prev.find((o) => o.week_number === weekNum);
+                        return exists
+                          ? prev.map((o) => (o.week_number === weekNum ? updated : o))
+                          : [...prev, updated];
+                      });
+                      saveOBT(updated);
+                    }}
+                    disabled={!isOwnGame}
+                    className="text-sm font-bold bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50 min-h-[44px]"
+                  >
+                    <option value="0">0%</option>
+                    <option value="100">100%</option>
+                  </select>
+                </div>
+                <textarea
+                  value={obt.description}
                   onChange={(e) => {
-                    const updated = { ...obt, completion_percentage: parseInt(e.target.value) };
-                    setObts(obts.map((o) => (o.week_number === obt.week_number ? updated : o)));
-                    saveOBT(updated);
+                    const updated = { ...obt, description: e.target.value };
+                    setObts((prev) => {
+                      const exists = prev.find((o) => o.week_number === weekNum);
+                      return exists
+                        ? prev.map((o) => (o.week_number === weekNum ? updated : o))
+                        : [...prev, updated];
+                    });
                   }}
+                  onBlur={() => { if (obt.description) saveOBT(obt); }}
                   disabled={!isOwnGame}
-                  className="text-sm font-bold bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50 min-h-[44px]"
-                >
-                  <option value="0">0%</option>
-                  <option value="100">100%</option>
-                </select>
+                  placeholder="What's your One Big Thing for this bi-week?"
+                  className="w-full text-sm bg-transparent border border-foreground/10 rounded p-2 mb-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
+                  rows={2}
+                />
+                <input
+                  type="text"
+                  value={obt.notes || ''}
+                  onChange={(e) => {
+                    const updated = { ...obt, notes: e.target.value };
+                    setObts((prev) => {
+                      const exists = prev.find((o) => o.week_number === weekNum);
+                      return exists
+                        ? prev.map((o) => (o.week_number === weekNum ? updated : o))
+                        : [...prev, updated];
+                    });
+                  }}
+                  onBlur={() => { if (obt.description) saveOBT(obt); }}
+                  disabled={!isOwnGame}
+                  placeholder="Notes..."
+                  className="w-full text-xs text-foreground/60 bg-transparent border border-foreground/10 rounded px-2 py-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
+                />
               </div>
-              <textarea
-                value={obt.description}
-                onChange={(e) => {
-                  setObts(obts.map((o) => (o.week_number === obt.week_number ? { ...o, description: e.target.value } : o)));
-                }}
-                onBlur={() => saveOBT(obt)}
-                disabled={!isOwnGame}
-                placeholder="What's your One Big Thing for this bi-week?"
-                className="w-full text-sm bg-transparent border border-foreground/10 rounded p-2 mb-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
-                rows={2}
-              />
-              <input
-                type="text"
-                value={obt.notes || ''}
-                onChange={(e) => {
-                  setObts(obts.map((o) => (o.week_number === obt.week_number ? { ...o, notes: e.target.value } : o)));
-                }}
-                onBlur={() => saveOBT(obt)}
-                disabled={!isOwnGame}
-                placeholder="Notes..."
-                className="w-full text-xs text-foreground/60 bg-transparent border border-foreground/10 rounded px-2 py-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
-              />
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
