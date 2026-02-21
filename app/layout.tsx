@@ -15,6 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "The6Connect",
   description: "Private accountability platform for The Six",
+  appleWebApp: {
+    capable: true,
+    title: "The Six",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export default function RootLayout({
