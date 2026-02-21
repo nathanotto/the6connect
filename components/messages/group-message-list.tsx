@@ -7,6 +7,7 @@
  */
 
 import { format } from 'date-fns';
+import { linkify } from '@/lib/utils/linkify';
 
 interface GroupMessage {
   id: string;
@@ -45,7 +46,7 @@ export function GroupMessageList({ initialMessages, currentUserId }: GroupMessag
                     </span>
                   </div>
                   <p className="text-xs text-foreground/90 whitespace-pre-wrap">
-                    {message.content}
+                    {linkify(message.content)}
                   </p>
                 </div>
               </div>

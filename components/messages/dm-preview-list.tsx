@@ -8,6 +8,7 @@
 
 import { useState } from 'react';
 import { format } from 'date-fns';
+import { linkify } from '@/lib/utils/linkify';
 
 interface DirectMessage {
   id: string;
@@ -57,7 +58,7 @@ export function DMPreviewList({ messages, currentUserId, otherUserId, otherUserN
                     </span>
                   </div>
                   <p className="text-sm text-foreground/90">
-                    {isExpanded ? message.content : preview}
+                    {isExpanded ? linkify(message.content) : preview}
                   </p>
                 </div>
                 {message.content.length > 40 && (

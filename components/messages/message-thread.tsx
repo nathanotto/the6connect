@@ -10,6 +10,7 @@ import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { format } from 'date-fns';
 import { MessageComposer } from './message-composer';
+import { linkify } from '@/lib/utils/linkify';
 
 interface Message {
   id: string;
@@ -113,7 +114,7 @@ export function MessageThread({
                       : 'bg-foreground/10'
                   }`}
                 >
-                  <p className="text-sm">{message.content}</p>
+                  <p className="text-sm">{linkify(message.content)}</p>
                   <p
                     className={`text-xs mt-1 ${
                       isOwnMessage ? 'text-background/70' : 'text-foreground/60'

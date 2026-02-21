@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import { getRelativeTimeString } from '@/lib/utils/date-utils';
+import { linkify } from '@/lib/utils/linkify';
 import { useRouter } from 'next/navigation';
 
 interface Comment {
@@ -393,7 +394,7 @@ export function CheckinCard({ checkin, member, currentUserId, allUsers }: Checki
             </div>
             {checkin.notes && (
               <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-3 text-sm bg-zinc-100 dark:bg-zinc-800/30">
-                <p className="text-foreground/90">{checkin.notes}</p>
+                <p className="text-foreground/90 break-words">{linkify(checkin.notes)}</p>
               </div>
             )}
           </div>
@@ -459,7 +460,7 @@ export function CheckinCard({ checkin, member, currentUserId, allUsers }: Checki
                 <span>•</span>
                 <span>{getRelativeTimeString(comment.created_at)}</span>
               </div>
-              <p className="text-sm text-foreground/90">{comment.content}</p>
+              <p className="text-sm text-foreground/90 break-words">{linkify(comment.content)}</p>
             </div>
           ))}
 
