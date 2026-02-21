@@ -39,7 +39,7 @@ export default async function GroupMessagesPage() {
         >
           ← Back to Messages
         </Link>
-        <h1 className="text-3xl font-bold">Group Chat</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Group Chat</h1>
         <p className="text-foreground/60 mt-2">
           Messages visible to all group members
         </p>

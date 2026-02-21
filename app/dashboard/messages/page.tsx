@@ -59,7 +59,7 @@ export default async function MessagesPage() {
   return (
     <div className="space-y-8 max-w-2xl">
       <div>
-        <h1 className="text-3xl font-bold">Messages</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Messages</h1>
         <p className="text-foreground/60 mt-2">
           Group chat and direct messages
         </p>

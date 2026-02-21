@@ -54,7 +54,7 @@ export default async function QuestionsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Questions</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Questions</h1>
         <p className="text-foreground/60 mt-2">
           Ask reflective questions and answer as a group
         </p>
@@ -74,9 +74,9 @@ export default async function QuestionsPage() {
                 >
                   {/* Question Header */}
                   <div className="border-b border-neutral-500 dark:border-neutral-600 p-4 bg-neutral-200 dark:bg-neutral-800/40">
-                    <div className="flex items-start justify-between gap-4 mb-2">
-                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-200">{question.question_text}</h3>
-                      <span className="text-xs text-neutral-600 dark:text-neutral-400 whitespace-nowrap">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-4 mb-2">
+                      <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-200">{question.question_text}</h3>
+                      <span className="text-xs text-neutral-600 dark:text-neutral-400 whitespace-nowrap sm:mt-0.5">
                         {format(new Date(question.created_at), 'MMM d, yyyy')}
                       </span>
                     </div>

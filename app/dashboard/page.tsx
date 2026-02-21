@@ -114,7 +114,7 @@ export default async function DashboardPage() {
           />
         )}
         <div>
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-2xl md:text-3xl font-bold">
             {profile?.display_name || profile?.full_name || 'Friend'} of The Six
           </h1>
           <p className="text-sm italic text-foreground/60 mt-2">
@@ -175,7 +175,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Check-ins - All Members */}
-        <div className="border border-zinc-400 dark:border-zinc-600 border-t lg:border-t border-l-0 lg:border-l-0 bg-zinc-100/50 dark:bg-zinc-900/20">
+        <div className="border border-zinc-400 dark:border-zinc-600 lg:border-l-0 bg-zinc-100/50 dark:bg-zinc-900/20">
           <Link href="/dashboard/checkins">
             <h3 className="font-semibold px-4 py-3 bg-zinc-200 dark:bg-zinc-800/40 border-b border-zinc-400 dark:border-zinc-600 text-zinc-900 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-zinc-50 cursor-pointer transition">Check-ins</h3>
           </Link>
@@ -239,7 +239,7 @@ export default async function DashboardPage() {
       {/* Quick Actions */}
       <div className="border border-neutral-500 dark:border-neutral-600 p-6 bg-neutral-700/10 dark:bg-neutral-800/20">
         <h3 className="font-semibold mb-4 text-neutral-800 dark:text-neutral-300">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-0">
           <Link
             href="/dashboard/checkins"
             className="border border-neutral-500 dark:border-neutral-600 p-4 hover:bg-neutral-700/20 dark:hover:bg-neutral-700/40 transition text-center bg-white dark:bg-neutral-900/30"

@@ -75,7 +75,7 @@ export default async function EventDetailPage({
           ← Back to Schedule
         </Link>
         <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-3xl font-bold">{event.title}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{event.title}</h1>
           {event.is_confirmed && (
             <span className="text-sm bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-3 py-1 rounded-full font-medium">
               Confirmed

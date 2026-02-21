@@ -31,7 +31,7 @@ export default async function PhotosPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">The Six Pics</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">The Six Pics</h1>
         <p className="text-foreground/60 mt-2">
           Share photos with the group
         </p>

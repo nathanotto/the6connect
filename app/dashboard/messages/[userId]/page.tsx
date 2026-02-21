@@ -48,7 +48,7 @@ export default async function MessageThreadPage({
 
   return (
     <div className="flex justify-center">
-      <div className="flex flex-col h-[calc(100vh-8rem)] w-full max-w-3xl">
+      <div className="flex flex-col h-[calc(100vh-4rem)] md:h-[calc(100vh-8rem)] w-full max-w-3xl">
         {/* Header */}
         <div className="border-b border-foreground/20 pb-4 mb-4">
           <Link

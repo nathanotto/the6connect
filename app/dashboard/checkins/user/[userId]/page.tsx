@@ -59,7 +59,7 @@ export default async function MemberLifeStatusPage({
         >
           ← Back to Check-ins
         </Link>
-        <h1 className="text-3xl font-bold">
+        <h1 className="text-2xl md:text-3xl font-bold">
           {member.display_name || member.full_name}'s Check-ins
         </h1>
         <p className="text-foreground/60 mt-2">
