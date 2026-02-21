@@ -24,13 +24,10 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId') || user.id;
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    // Fetch life status updates with life area details
+    // Fetch life status updates
     const { data, error } = await supabase
       .from('life_status_updates')
-      .select(`
-        *,
-        life_area:life_areas(*)
-      `)
+      .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(limit);
@@ -61,16 +58,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { zone_ids, zone_other, statuses, status_other, notes, support_type, support_type_other } = body;
+    const { zone_other, statuses, status_other, notes, support_type, support_type_other } = body;
 
     // Validate required fields
-    if (!zone_ids || !Array.isArray(zone_ids) || zone_ids.length === 0) {
-      return NextResponse.json(
-        { error: 'At least one zone is required' },
-        { status: 400 }
-      );
-    }
-
     if (!statuses || !Array.isArray(statuses) || statuses.length === 0) {
       return NextResponse.json(
         { error: 'At least one feeling is required' },
@@ -91,7 +81,6 @@ export async function POST(request: NextRequest) {
       .from('life_status_updates')
       .insert({
         user_id: user.id,
-        zone_ids,
         zone_other: zone_other || null,
         status: statuses.join(', '), // Store as comma-separated string for now
         status_other: statuses.includes('Other') ? status_other : null,
@@ -113,7 +102,6 @@ export async function POST(request: NextRequest) {
       entity_type: 'life_status_updates',
       entity_id: data.id,
       metadata: {
-        zone_ids,
         statuses,
       },
     });

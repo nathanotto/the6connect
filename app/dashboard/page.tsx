@@ -30,12 +30,6 @@ export default async function DashboardPage() {
     .single();
 
 
-  // Fetch all life areas
-  const { data: lifeAreas } = await supabase
-    .from('life_areas')
-    .select('*')
-    .order('sort_order', { ascending: true });
-
   // Fetch all users
   const { data: allUsers } = await supabase
     .from('users')
@@ -189,21 +183,6 @@ export default async function DashboardPage() {
             {usersWithCheckins?.map((member: any, index: number) => {
               const checkin = member.latestCheckin;
 
-              // Get zone names
-              let zoneNames = 'No zones';
-              if (checkin?.zone_ids && Array.isArray(checkin.zone_ids)) {
-                zoneNames = checkin.zone_ids
-                  .map((zoneId: string) => {
-                    const area = lifeAreas?.find((a: any) => a.id === zoneId);
-                    if (area?.name === 'Other' && checkin.zone_other) {
-                      return checkin.zone_other;
-                    }
-                    return area?.name;
-                  })
-                  .filter(Boolean)
-                  .join(', ');
-              }
-
               return (
                 <div
                   key={member.id}
@@ -229,7 +208,7 @@ export default async function DashboardPage() {
                         </div>
                         <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-2 bg-white dark:bg-zinc-900/30">
                           <p className="text-xs text-foreground/80">
-                            <span className="font-medium text-zinc-700 dark:text-zinc-400">Zones:</span> {zoneNames}
+                            <span className="font-medium text-zinc-700 dark:text-zinc-400">Topic:</span> {checkin.zone_other || 'General check-in'}
                           </p>
                         </div>
                         <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-2 bg-white dark:bg-zinc-900/30">

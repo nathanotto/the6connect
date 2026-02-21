@@ -36,12 +36,6 @@ export default async function MemberLifeStatusPage({
     notFound();
   }
 
-  // Fetch life areas
-  const { data: lifeAreas } = await supabase
-    .from('life_areas')
-    .select('*')
-    .order('sort_order', { ascending: true });
-
   // Fetch all users for read status
   const { data: allUsers } = await supabase
     .from('users')
@@ -83,7 +77,6 @@ export default async function MemberLifeStatusPage({
                 key={checkin.id}
                 checkin={checkin}
                 member={member}
-                lifeAreas={lifeAreas || []}
                 currentUserId={user.id}
                 allUsers={allUsers || []}
               />

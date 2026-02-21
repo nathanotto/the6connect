@@ -46,12 +46,6 @@ export default async function ProfilePage({
     .order('created_at', { ascending: false })
     .limit(5);
 
-  // Fetch life areas for zone display
-  const { data: lifeAreas } = await supabase
-    .from('life_areas')
-    .select('*')
-    .order('sort_order', { ascending: true });
-
   const isOwnProfile = currentUser.id === userId;
 
   return (
@@ -83,21 +77,6 @@ export default async function ProfilePage({
           <h2 className="text-lg font-semibold mb-2">Check-ins</h2>
           <div className="space-y-2">
             {recentCheckins.map((checkin: any) => {
-              // Get zone names
-              let zoneNames = 'No zones';
-              if (checkin.zone_ids && Array.isArray(checkin.zone_ids)) {
-                zoneNames = checkin.zone_ids
-                  .map((zoneId: string) => {
-                    const area = lifeAreas?.find((a: any) => a.id === zoneId);
-                    if (area?.name === 'Other' && checkin.zone_other) {
-                      return checkin.zone_other;
-                    }
-                    return area?.name;
-                  })
-                  .filter(Boolean)
-                  .join(', ');
-              }
-
               return (
                 <div
                   key={checkin.id}
@@ -106,7 +85,7 @@ export default async function ProfilePage({
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <p className="text-xs text-foreground/60 mb-1">
-                        <span className="font-medium">Zones:</span> {zoneNames}
+                        <span className="font-medium">Topic:</span> {checkin.zone_other || 'General check-in'}
                       </p>
                       <div className="space-y-0.5">
                         <p className="text-xs">

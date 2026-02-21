@@ -9,23 +9,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-interface LifeArea {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-}
-
-interface StatusFormProps {
-  lifeAreas: LifeArea[];
-}
-
-export function StatusForm({ lifeAreas }: StatusFormProps) {
+export function StatusForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    zone_ids: [] as string[],
     zone_other: 'General checkin',
     statuses: ['Typical'] as string[],
     status_other: '',
@@ -69,7 +57,6 @@ export function StatusForm({ lifeAreas }: StatusFormProps) {
 
       // Reset form
       setFormData({
-        zone_ids: [],
         zone_other: 'General checkin',
         statuses: ['Typical'],
         status_other: '',

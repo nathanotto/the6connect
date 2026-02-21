@@ -49,16 +49,9 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { zone_ids, zone_other, statuses, status_other, support_type, support_type_other, notes } = body;
+    const { zone_other, statuses, status_other, support_type, support_type_other, notes } = body;
 
     // Validate required fields
-    if (!zone_ids || !Array.isArray(zone_ids) || zone_ids.length === 0) {
-      return NextResponse.json(
-        { error: 'At least one zone is required' },
-        { status: 400 }
-      );
-    }
-
     if (!statuses || !Array.isArray(statuses) || statuses.length === 0) {
       return NextResponse.json(
         { error: 'At least one feeling is required' },
@@ -77,7 +70,6 @@ export async function PATCH(
     const { data, error } = await supabase
       .from('life_status_updates')
       .update({
-        zone_ids,
         zone_other: zone_other || null,
         status: statuses.join(', '),
         status_other: statuses.includes('Other') ? status_other : null,

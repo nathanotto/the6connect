@@ -10,11 +10,6 @@ import { useState, useEffect } from 'react';
 import { getRelativeTimeString } from '@/lib/utils/date-utils';
 import { useRouter } from 'next/navigation';
 
-interface LifeArea {
-  id: string;
-  name: string;
-}
-
 interface Comment {
   id: string;
   content: string;
@@ -33,7 +28,6 @@ interface CheckinCardProps {
     full_name: string;
     display_name?: string;
   };
-  lifeAreas: LifeArea[];
   currentUserId: string;
   allUsers: Array<{
     id: string;
@@ -42,7 +36,7 @@ interface CheckinCardProps {
   }>;
 }
 
-export function CheckinCard({ checkin, member, lifeAreas, currentUserId, allUsers }: CheckinCardProps) {
+export function CheckinCard({ checkin, member, currentUserId, allUsers }: CheckinCardProps) {
   const router = useRouter();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -52,7 +46,6 @@ export function CheckinCard({ checkin, member, lifeAreas, currentUserId, allUser
   const [editing, setEditing] = useState(false);
   const [readByUsers, setReadByUsers] = useState<string[]>([]);
   const [editFormData, setEditFormData] = useState({
-    zone_ids: checkin?.zone_ids || [],
     zone_other: checkin?.zone_other || '',
     statuses: checkin?.status ? checkin.status.split(', ') : [],
     status_other: checkin?.status_other || '',
@@ -191,12 +184,6 @@ export function CheckinCard({ checkin, member, lifeAreas, currentUserId, allUser
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate at least one zone
-    if (editFormData.zone_ids.length === 0) {
-      setEditError('Please select at least one zone');
-      return;
-    }
-
     // Validate at least one feeling
     if (editFormData.statuses.length === 0) {
       setEditError('Please select at least one feeling');
@@ -252,17 +239,7 @@ export function CheckinCard({ checkin, member, lifeAreas, currentUserId, allUser
     );
   }
 
-  // Get zone names from zone_ids
-  const zoneNames = checkin.zone_ids
-    ?.map((zoneId: string) => {
-      const area = lifeAreas.find((a) => a.id === zoneId);
-      if (area?.name === 'Other' && checkin.zone_other) {
-        return checkin.zone_other;
-      }
-      return area?.name;
-    })
-    .filter(Boolean)
-    .join(', ') || 'Unknown';
+  const topic = checkin.zone_other || 'General check-in';
 
   const aging = getRelativeTimeString(checkin.created_at);
 
@@ -272,7 +249,7 @@ export function CheckinCard({ checkin, member, lifeAreas, currentUserId, allUser
       <div className="border border-zinc-400 dark:border-zinc-600 p-3 bg-zinc-200 dark:bg-zinc-800/40">
         <h3 className="font-semibold text-lg text-zinc-900 dark:text-zinc-200">{member.display_name || member.full_name}</h3>
         <div className="flex items-center gap-2 mt-1 text-sm text-zinc-700 dark:text-zinc-400">
-          <span className="font-medium">{zoneNames}</span>
+          <span className="font-medium">{topic}</span>
           <span>•</span>
           <span>{aging}</span>
         </div>
@@ -287,47 +264,24 @@ export function CheckinCard({ checkin, member, lifeAreas, currentUserId, allUser
             </div>
           )}
 
-          {/* Zone Selection */}
+          {/* Topic */}
           <div>
-            <label className="block text-xs font-medium mb-1">Zone *</label>
-            <div className="flex flex-wrap gap-2">
-              {lifeAreas.map((area) => (
-                <label key={area.id} className="flex items-center gap-1.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    value={area.id}
-                    checked={editFormData.zone_ids.includes(area.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setEditFormData({ ...editFormData, zone_ids: [...editFormData.zone_ids, area.id] });
-                      } else {
-                        setEditFormData({ ...editFormData, zone_ids: editFormData.zone_ids.filter(id => id !== area.id) });
-                      }
-                    }}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-xs">{area.name}</span>
-                </label>
-              ))}
-            </div>
-            {editFormData.zone_ids.includes(lifeAreas.find(a => a.name === 'Other')?.id || '') && (
-              <input
-                type="text"
-                maxLength={20}
-                value={editFormData.zone_other}
-                onChange={(e) => setEditFormData({ ...editFormData, zone_other: e.target.value })}
-                placeholder="What zone?"
-                required
-                className="w-full mt-2 px-2 py-1 border border-foreground/20 rounded focus:outline-none focus:ring-1 focus:ring-foreground/40 bg-background text-xs"
-              />
-            )}
+            <label className="block text-xs font-medium mb-1">Topic</label>
+            <input
+              type="text"
+              maxLength={50}
+              value={editFormData.zone_other}
+              onChange={(e) => setEditFormData({ ...editFormData, zone_other: e.target.value })}
+              placeholder="General checkin"
+              className="w-full px-2 py-1 border border-foreground/20 rounded focus:outline-none focus:ring-1 focus:ring-foreground/40 bg-background text-xs"
+            />
           </div>
 
           {/* I'm feeling... */}
           <div>
             <label className="block text-xs font-medium mb-1">I'm feeling... *</label>
             <div className="flex flex-wrap gap-2">
-              {['Anxious', 'Pissed Off', 'Meh', 'Optimistic', 'Solid', 'On Fire', 'Other'].map((feeling) => (
+              {['Good', 'Bad', 'Typical', 'Combo', 'Other'].map((feeling) => (
                 <label key={feeling} className="flex items-center gap-1.5 cursor-pointer">
                   <input
                     type="checkbox"
@@ -362,7 +316,7 @@ export function CheckinCard({ checkin, member, lifeAreas, currentUserId, allUser
           <div>
             <label className="block text-xs font-medium mb-1">I want you to... *</label>
             <div className="flex flex-wrap gap-2">
-              {['Listen', 'Support', 'Advise', 'Hug Me', 'Call me', 'Other'].map((option) => (
+              {['Just read this', 'Listen', 'Respond', 'Be supportive', 'Advise', 'Other'].map((option) => (
                 <label key={option} className="flex items-center gap-1.5 cursor-pointer">
                   <input
                     type="radio"
