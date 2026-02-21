@@ -9,10 +9,16 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export function StatusForm() {
+interface StatusFormProps {
+  currentUserId: string;
+  allUsers: Array<{ id: string; full_name: string; display_name?: string }>;
+}
+
+export function StatusForm({ currentUserId, allUsers }: StatusFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [sendEmail, setSendEmail] = useState(true);
   const [formData, setFormData] = useState({
     zone_other: 'General checkin',
     statuses: ['Typical'] as string[],
@@ -21,6 +27,9 @@ export function StatusForm() {
     support_type_other: '',
     notes: '',
   });
+
+  const otherMembers = allUsers.filter((u) => u.id !== currentUserId);
+  const otherNames = otherMembers.map((u) => u.display_name || u.full_name).join(', ');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +55,7 @@ export function StatusForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, sendEmail }),
       });
 
       const result = await response.json();
@@ -214,8 +223,19 @@ export function StatusForm() {
         />
       </div>
 
-      {/* Submit Button */}
-      <div className="border border-slate-500 dark:border-slate-600 border-t-0 p-3 bg-slate-700/10 dark:bg-slate-800/20">
+      {/* Email option + Submit */}
+      <div className="border border-slate-500 dark:border-slate-600 border-t-0 p-3 bg-slate-700/10 dark:bg-slate-800/20 space-y-3">
+        {otherNames && (
+          <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-800 dark:text-slate-300">
+            <input
+              type="checkbox"
+              checked={sendEmail}
+              onChange={(e) => setSendEmail(e.target.checked)}
+              className="w-4 h-4 accent-slate-700"
+            />
+            Email this check-in to {otherNames}
+          </label>
+        )}
         <button
           type="submit"
           disabled={loading}

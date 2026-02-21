@@ -77,7 +77,7 @@ export default async function LifeStatusPage() {
         {/* Checking in Form - Right Side */}
         <div className="border-t lg:border-t lg:border-l-0 border border-slate-500 dark:border-slate-600 p-4 bg-slate-700/10 dark:bg-slate-800/20">
           <h2 className="text-lg font-semibold mb-3 text-slate-800 dark:text-slate-300">Checking in...</h2>
-          <StatusForm />
+          <StatusForm currentUserId={user.id} allUsers={allUsers || []} />
         </div>
       </div>
 
