@@ -10,6 +10,8 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { getRandomMessage } from '@/lib/constants/inspirational-messages';
 import { GroupMessageForm } from '@/components/messages/group-message-form';
+import { ActivitySummary } from '@/components/dashboard/activity-summary';
+import { MessageList } from '@/components/dashboard/message-list';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -123,6 +125,8 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      <ActivitySummary />
+
       {/* Messages and Check-ins - Side by Side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
         {/* Messages */}
@@ -134,31 +138,7 @@ export default async function DashboardPage() {
             <GroupMessageForm />
           </div>
           {allMessages && allMessages.length > 0 ? (
-            <>
-              <div className="space-y-0 mb-3">
-                {allMessages.map((msg: any) => {
-                  const truncatedContent =
-                    msg.content.length > 50
-                      ? msg.content.substring(0, 50) + '...'
-                      : msg.content;
-
-                  return (
-                    <div key={`${msg.type}-${msg.id}`} className="text-sm border border-neutral-500 dark:border-neutral-600 p-2 bg-white dark:bg-neutral-900/30">
-                      <div className="text-xs text-neutral-600 dark:text-neutral-400">
-                        {format(new Date(msg.created_at), 'MMM d')} - {msg.username}
-                      </div>
-                      <p className="text-foreground/80 truncate">{truncatedContent}</p>
-                    </div>
-                  );
-                })}
-              </div>
-              <Link
-                href="/dashboard/messages"
-                className="text-sm text-neutral-700 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 underline font-medium"
-              >
-                View all messages →
-              </Link>
-            </>
+            <MessageList messages={allMessages} />
           ) : (
             <>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">

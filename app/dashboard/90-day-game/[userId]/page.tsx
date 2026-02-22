@@ -7,6 +7,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { EditableGameDetail } from './edit-page';
+import { PageViewTracker } from '@/components/dashboard/page-view-tracker';
 
 type PageProps = {
   params: Promise<{ userId: string }>;
@@ -98,7 +99,14 @@ export default async function GameDetailPage({ params }: PageProps) {
     ]);
 
   return (
-    <EditableGameDetail
+    <>
+      {userId === currentUser.id && (
+        <PageViewTracker
+          storageKey="game_page_last_visited"
+          extraKeys={{ game_current_name: participant.game_name || activeGame.title || '90-Day Game' }}
+        />
+      )}
+      <EditableGameDetail
       gameId={activeGame.id}
       userId={userId}
       currentUserId={currentUser.id}
@@ -119,5 +127,6 @@ export default async function GameDetailPage({ params }: PageProps) {
       startDate={activeGame.start_date}
       endDate={activeGame.end_date}
     />
+    </>
   );
 }

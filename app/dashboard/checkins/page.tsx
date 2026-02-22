@@ -7,6 +7,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { StatusForm } from '@/components/life-status/status-form';
 import { CheckinCard } from '@/components/life-status/checkin-card';
+import { PageViewTracker } from '@/components/dashboard/page-view-tracker';
 
 export default async function LifeStatusPage() {
   const supabase = await createClient();
@@ -45,6 +46,7 @@ export default async function LifeStatusPage() {
 
   return (
     <div className="space-y-8">
+      <PageViewTracker storageKey="checkins_last_viewed" />
       <div>
         <h1 className="text-2xl md:text-3xl font-bold">Check-ins</h1>
         <p className="text-foreground/60 mt-2">

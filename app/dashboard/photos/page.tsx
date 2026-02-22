@@ -7,6 +7,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { PhotoUploadForm } from '@/components/photos/photo-upload-form';
 import { PhotoList } from '@/components/photos/photo-list';
+import { PageViewTracker } from '@/components/dashboard/page-view-tracker';
 
 export default async function PhotosPage() {
   const supabase = await createClient();
@@ -30,6 +31,7 @@ export default async function PhotosPage() {
 
   return (
     <div className="space-y-8">
+      <PageViewTracker storageKey="photos_last_viewed" />
       <div>
         <h1 className="text-2xl md:text-3xl font-bold">The Six Pics</h1>
         <p className="text-foreground/60 mt-2">
