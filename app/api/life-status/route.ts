@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
     if (sendEmail) {
       const { data: senderProfile } = await supabase
         .from('users')
-        .select('full_name, display_name')
+        .select('email, full_name, display_name')
         .eq('id', user.id)
         .single();
 
@@ -133,6 +133,7 @@ export async function POST(request: NextRequest) {
         await resend.emails.send({
           from: process.env.RESEND_FROM_EMAIL || 'The Six <checkins@the6connect.com>',
           to: recipientEmails,
+          cc: senderProfile?.email ? [senderProfile.email] : undefined,
           subject: `[${senderName}] ${topic}`,
           html: `
             <p><a href="${baseUrl}/dashboard/checkins">View check-ins →</a></p>
