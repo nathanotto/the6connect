@@ -71,7 +71,7 @@ export default async function NinetyDayGamePage() {
     );
   }
 
-  // If game is in setup mode, show setup view
+  // If game is in setup mode, show setup view + past games below
   if (currentGame.status === 'setup') {
     const { data: participants } = await supabase
       .from('game_participants')
@@ -82,14 +82,76 @@ export default async function NinetyDayGamePage() {
       .eq('game_id', currentGame.id)
       .order('user_id');
 
+    // Fetch completed games for the past games section
+    const { data: completedGames } = await supabase
+      .from('games')
+      .select('*')
+      .eq('status', 'completed')
+      .order('start_date', { ascending: false });
+
+    const pastGames = await Promise.all(
+      (completedGames || []).map(async (game) => {
+        const { data: gameParticipants } = await supabase
+          .from('game_participants')
+          .select(`*, user:users(id, full_name, display_name)`)
+          .eq('game_id', game.id)
+          .eq('opted_in', true);
+        return { ...game, participants: gameParticipants || [] };
+      })
+    );
+
     return (
-      <SetupView
-        gameId={currentGame.id}
-        startDate={currentGame.start_date}
-        endDate={currentGame.end_date}
-        currentUserId={user.id}
-        participants={participants || []}
-      />
+      <div className="space-y-8">
+        <SetupView
+          gameId={currentGame.id}
+          startDate={currentGame.start_date}
+          endDate={currentGame.end_date}
+          currentUserId={user.id}
+          participants={participants || []}
+        />
+
+        {pastGames.length > 0 && (
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Past Games</h2>
+            <div className="space-y-4">
+              {pastGames.map((game) => (
+                <div key={game.id} className="border border-foreground/20 rounded-lg p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-bold">{game.title || 'Untitled Game'}</h3>
+                      {game.description && (
+                        <p className="text-sm text-foreground/70 mt-0.5">{game.description}</p>
+                      )}
+                      <p className="text-sm text-foreground/60 mt-1">
+                        {new Date(game.start_date).toLocaleDateString()} – {new Date(game.end_date).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <span className="px-3 py-1 bg-green-500/10 text-green-500 text-xs font-medium rounded">
+                      COMPLETED
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {game.participants.map((p: any) => (
+                      <div key={p.id} className="border border-foreground/10 rounded p-3 text-center hover:border-foreground/30 transition">
+                        <p className="font-medium text-sm">{p.user.display_name || p.user.full_name}</p>
+                        {p.game_name && (
+                          <p className="text-xs text-foreground/60 mt-1">"{p.game_name}"</p>
+                        )}
+                        <Link
+                          href={`/dashboard/90-day-game/history/${game.id}/${p.user_id}`}
+                          className="text-xs text-foreground/60 hover:text-foreground underline mt-2 block"
+                        >
+                          View Game →
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     );
   }
 
