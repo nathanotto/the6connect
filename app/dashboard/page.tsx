@@ -12,6 +12,7 @@ import { getRandomMessage } from '@/lib/constants/inspirational-messages';
 import { GroupMessageForm } from '@/components/messages/group-message-form';
 import { ActivitySummary } from '@/components/dashboard/activity-summary';
 import { MessageList } from '@/components/dashboard/message-list';
+import { PhotoThumbnails } from '@/components/dashboard/photo-thumbnails';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -247,36 +248,7 @@ export default async function DashboardPage() {
           <h3 className="font-semibold mb-3 text-stone-800 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 cursor-pointer transition">Photos</h3>
         </Link>
         {recentPhotos && recentPhotos.length > 0 ? (
-          <>
-            <div className="space-y-0 mb-3">
-              {recentPhotos.map((photo: any) => (
-                <div key={photo.id} className="flex gap-3 border border-stone-500 dark:border-stone-600 p-2 bg-white dark:bg-stone-900/30">
-                  <img
-                    src={photo.photo_url}
-                    alt={photo.caption || 'Photo'}
-                    className="w-16 h-16 object-cover rounded flex-shrink-0 border-2 border-stone-500 dark:border-stone-600"
-                  />
-                  <div className="flex-1 min-w-0 text-sm">
-                    <p className="font-medium text-xs text-stone-800 dark:text-stone-300">
-                      {photo.user.display_name || photo.user.full_name}
-                    </p>
-                    <p className="text-xs text-foreground/60 truncate">
-                      {photo.caption || 'No caption'}
-                    </p>
-                    <p className="text-xs text-stone-600 dark:text-stone-400">
-                      {format(new Date(photo.created_at), 'MMM d, h:mm a')}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Link
-              href="/dashboard/photos"
-              className="text-sm text-stone-700 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 underline font-medium"
-            >
-              View all photos →
-            </Link>
-          </>
+          <PhotoThumbnails photos={recentPhotos as any} />
         ) : (
           <>
             <p className="text-sm text-stone-600 dark:text-stone-400 mb-3">
