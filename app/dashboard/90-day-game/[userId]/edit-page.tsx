@@ -7,6 +7,7 @@
  */
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 type Props = {
@@ -47,6 +48,7 @@ export function EditableGameDetail({
 }: Props) {
   const isOwnGame = userId === currentUserId;
 
+  const [gameName, setGameName] = useState(participant.game_name || '');
   const [vision, setVision] = useState(gameData.vision);
   const [why, setWhy] = useState(gameData.why);
   const [objective, setObjective] = useState(gameData.objective);
@@ -57,6 +59,10 @@ export function EditableGameDetail({
   const [obts, setObts] = useState(gameData.obts);
 
   const [saving, setSaving] = useState(false);
+  const [setupErrors, setSetupErrors] = useState<string[]>([]);
+  const [completingSetup, setCompletingSetup] = useState(false);
+
+  const router = useRouter();
 
   // New inner game item form state
   const [newLimitingCategory, setNewLimitingCategory] = useState('belief');
@@ -368,12 +374,76 @@ export function EditableGameDetail({
     }
   };
 
+  const saveGameName = async (name: string) => {
+    if (!isOwnGame) return;
+    await fetch('/api/90-day-game/participant', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId, game_name: name.trim() || null }),
+    });
+  };
+
+  const handleMarkSetupComplete = async () => {
+    const errors: string[] = [];
+
+    if (!gameName.trim()) errors.push('Game name is required');
+    if (!vision?.content?.trim()) errors.push('Vision statement is required');
+    if (!why?.content?.trim()) errors.push('Why statement is required');
+    if (!objective?.content?.trim()) errors.push('Objective is required');
+
+    if (keyResults.length < 3) {
+      errors.push('At least 3 Key Results are required');
+    } else {
+      if (keyResults.some((kr) => !(kr.weight_percentage > 0))) {
+        errors.push('All Key Results must have a weight greater than 0');
+      }
+      const totalKRWeight = keyResults.reduce((sum, kr) => sum + (kr.weight_percentage || 0), 0);
+      if (totalKRWeight !== 100) {
+        errors.push(`Key Results weights must sum to 100% (currently ${totalKRWeight}%)`);
+      }
+    }
+
+    if (projects.length < 3) {
+      errors.push('At least 3 Projects are required');
+    } else {
+      if (projects.some((p) => !(p.weight_percentage > 0))) {
+        errors.push('All Projects must have a weight greater than 0');
+      }
+      const totalProjectWeight = projects.reduce((sum, p) => sum + (p.weight_percentage || 0), 0);
+      if (totalProjectWeight !== 100) {
+        errors.push(`Projects weights must sum to 100% (currently ${totalProjectWeight}%)`);
+      }
+    }
+
+    if (innerGameLimiting.length < 1) errors.push('At least 1 Limiting inner game item is required');
+    if (innerGameEmpowering.length < 1) errors.push('At least 1 Empowering inner game item is required');
+
+    const obt1 = obts.find((o) => o.week_number === 1);
+    if (!obt1?.description?.trim()) errors.push('Week 1 One Big Thing must be filled in');
+
+    setSetupErrors(errors);
+    if (errors.length > 0) return;
+
+    setCompletingSetup(true);
+    try {
+      await fetch('/api/90-day-game/participant', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gameId, setup_complete: true }),
+      });
+      router.push('/dashboard/90-day-game');
+    } catch {
+      setSetupErrors(['Failed to complete setup. Please try again.']);
+      setCompletingSetup(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
       <div>
         <Link href="/dashboard/90-day-game" className="text-sm text-foreground/60 hover:text-foreground mb-2 block">
-          ← Back to Overview
+          {gameStatus === 'setup' ? '← Back to Setup' : '← Back to Overview'}
         </Link>
         {gameTitle && (
           <div className="mb-3 pb-3 border-b border-foreground/10">
@@ -410,6 +480,22 @@ export function EditableGameDetail({
           data.
         </div>
       )}
+
+      {/* Game Name */}
+      <div className="border border-foreground/20 rounded-lg p-4 md:p-6">
+        <h2 className="text-lg md:text-xl font-semibold mb-1">Game Name</h2>
+        <p className="text-sm text-foreground/50 mb-3">Your personal name for this game</p>
+        <input
+          type="text"
+          value={gameName}
+          onChange={(e) => setGameName(e.target.value.slice(0, 150))}
+          onBlur={(e) => saveGameName(e.target.value)}
+          disabled={!isOwnGame}
+          placeholder='e.g., "D.O. or Die", "Foundation Year"'
+          className="w-full px-3 py-2 bg-transparent border border-foreground/20 rounded disabled:opacity-50 disabled:border-transparent"
+          maxLength={150}
+        />
+      </div>
 
       {/* Vision Statement */}
       <div className="border border-foreground/20 rounded-lg p-4 md:p-6">
@@ -968,6 +1054,34 @@ export function EditableGameDetail({
           })}
         </div>
       </div>
+
+      {/* Mark Setup Complete */}
+      {gameStatus === 'setup' && isOwnGame && (
+        <div className="border border-foreground/20 rounded-lg p-4 md:p-6">
+          <h2 className="text-lg md:text-xl font-semibold mb-2">Complete Setup</h2>
+          <p className="text-sm text-foreground/60 mb-4">
+            Once all sections are filled in, mark your setup as complete. Required: vision, why, objective, ≥3 key
+            results (weights = 100%), ≥3 projects (weights = 100%), at least 1 limiting and 1 empowering inner game
+            item, and Week 1 One Big Thing.
+          </p>
+          {setupErrors.length > 0 && (
+            <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded p-3 space-y-1">
+              {setupErrors.map((err, i) => (
+                <p key={i} className="text-sm text-red-500">
+                  • {err}
+                </p>
+              ))}
+            </div>
+          )}
+          <button
+            onClick={handleMarkSetupComplete}
+            disabled={completingSetup}
+            className="px-6 py-3 bg-foreground text-background font-semibold rounded-lg hover:opacity-90 disabled:opacity-50"
+          >
+            {completingSetup ? 'Completing Setup...' : 'Mark Setup Complete'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

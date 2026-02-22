@@ -104,6 +104,7 @@ export default async function NinetyDayGamePage() {
       <div className="space-y-8">
         <SetupView
           gameId={currentGame.id}
+          gameTitle={currentGame.title || ''}
           startDate={currentGame.start_date}
           endDate={currentGame.end_date}
           currentUserId={user.id}

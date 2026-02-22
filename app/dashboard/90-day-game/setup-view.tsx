@@ -19,13 +19,14 @@ type Participant = {
 
 type Props = {
   gameId: string;
+  gameTitle: string;
   startDate: string;
   endDate: string;
   currentUserId: string;
   participants: Participant[];
 };
 
-export function SetupView({ gameId, startDate, endDate, currentUserId, participants }: Props) {
+export function SetupView({ gameId, gameTitle, startDate, endDate, currentUserId, participants }: Props) {
   const [optingIn, setOptingIn] = useState(false);
   const [activating, setActivating] = useState(false);
   const [error, setError] = useState('');
@@ -117,7 +118,7 @@ export function SetupView({ gameId, startDate, endDate, currentUserId, participa
       <div>
         <h1 className="text-3xl font-bold">90-Day Game Setup</h1>
         <p className="text-foreground/60 mt-2">
-          {new Date(startDate).toLocaleDateString()} - {new Date(endDate).toLocaleDateString()} • SETUP MODE
+          {gameTitle && `${gameTitle} • `}{new Date(startDate).toLocaleDateString()} – {new Date(endDate).toLocaleDateString()} • The Six
         </p>
       </div>
 
@@ -143,13 +144,20 @@ export function SetupView({ gameId, startDate, endDate, currentUserId, participa
         ) : !currentParticipant?.setup_complete ? (
           <div>
             <p className="text-green-500 mb-2">✓ You have opted in</p>
-            <p className="text-foreground/60 mb-4">Complete your setup to start the game.</p>
+            <p className="text-foreground/60 mb-4">
+              {(() => {
+                const [y, m, d] = startDate.split('-').map(Number);
+                const deadline = new Date(y, m - 1, d - 1);
+                const formatted = deadline.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+                return `Start setting up your game. You need to finish by ${formatted}.`;
+              })()}
+            </p>
             <div className="flex gap-3">
               <Link
-                href={`/dashboard/90-day-game/setup?gameId=${gameId}`}
+                href="/dashboard/90-day-game/setup"
                 className="px-6 py-3 bg-foreground text-background font-medium rounded-lg hover:opacity-90"
               >
-                Complete Setup
+                Set Up My Game
               </Link>
               <button
                 onClick={handleOptOut}
