@@ -6,7 +6,7 @@
  * Inline editing for all game sections
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -61,8 +61,17 @@ export function EditableGameDetail({
   const [saving, setSaving] = useState(false);
   const [setupErrors, setSetupErrors] = useState<string[]>([]);
   const [completingSetup, setCompletingSetup] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [isSavingAll, setIsSavingAll] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   const router = useRouter();
+
+  // Refs to always have latest state in the auto-save interval
+  const stateRef = useRef({
+    gameName, vision, why, objective, keyResults, projects,
+    innerGameLimiting, innerGameEmpowering, obts, isDirty,
+  });
 
   // New inner game item form state
   const [newLimitingCategory, setNewLimitingCategory] = useState('belief');
@@ -110,6 +119,31 @@ export function EditableGameDetail({
   const overallScore = Math.round(
     (visionScore + whyScore + objectiveScore + keyResultsScore + projectsScore + innerGameScore + obtsScore) / 7
   );
+
+  // Mark dirty whenever any game data state changes (skip initial mount)
+  const hasMounted = useRef(false);
+  useEffect(() => {
+    if (!hasMounted.current) { hasMounted.current = true; return; }
+    setIsDirty(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameName, vision, why, objective, keyResults, projects, innerGameLimiting, innerGameEmpowering, obts]);
+
+  // Keep ref in sync with latest state
+  useEffect(() => {
+    stateRef.current = { gameName, vision, why, objective, keyResults, projects, innerGameLimiting, innerGameEmpowering, obts, isDirty };
+  });
+
+  // Auto-save every 30 seconds if dirty
+  useEffect(() => {
+    if (!isOwnGame || gameStatus !== 'setup') return;
+    const interval = setInterval(() => {
+      if (stateRef.current.isDirty) {
+        triggerSaveAll();
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOwnGame, gameStatus]);
 
   // Save functions
   const saveVision = async (content: string, completion_percentage: number) => {
@@ -383,6 +417,28 @@ export function EditableGameDetail({
     });
   };
 
+  const triggerSaveAll = async () => {
+    if (!isOwnGame) return;
+    const s = stateRef.current;
+    setIsSavingAll(true);
+    try {
+      await Promise.all([
+        saveGameName(s.gameName),
+        s.vision && fetch('/api/90-day-game/vision', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ gameId, content: s.vision.content || '', completion_percentage: s.vision.completion_percentage || 0 }) }),
+        s.why && fetch('/api/90-day-game/why', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ gameId, content: s.why.content || '', completion_percentage: s.why.completion_percentage || 0 }) }),
+        s.objective && fetch('/api/90-day-game/objective', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ gameId, content: s.objective.content || '', completion_percentage: s.objective.completion_percentage || 0 }) }),
+        ...s.keyResults.map((kr) => fetch('/api/90-day-game/key-results', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(kr) })),
+        ...s.projects.map((p) => fetch('/api/90-day-game/projects', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) })),
+        ...[...s.innerGameLimiting, ...s.innerGameEmpowering].map((item) => fetch('/api/90-day-game/inner-game', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(item) })),
+        ...s.obts.filter((o) => o.description).map((obt) => fetch('/api/90-day-game/one-big-things', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...obt, gameId }) })),
+      ]);
+      setLastSaved(new Date());
+      setIsDirty(false);
+    } finally {
+      setIsSavingAll(false);
+    }
+  };
+
   const handleMarkSetupComplete = async () => {
     const errors: string[] = [];
 
@@ -469,7 +525,15 @@ export function EditableGameDetail({
           <div className="text-left md:text-right">
             <div className="text-4xl md:text-5xl font-bold">{overallScore}%</div>
             <p className="text-sm text-foreground/60 mt-1">Overall Completion</p>
-            {saving && <p className="text-xs text-foreground/40 mt-1">Saving...</p>}
+            <p className="text-xs text-foreground/40 mt-1 min-h-[1rem]">
+              {isSavingAll || saving
+                ? 'Saving...'
+                : isDirty
+                ? 'Unsaved changes'
+                : lastSaved
+                ? `Last saved at ${lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                : null}
+            </p>
           </div>
         </div>
       </div>
@@ -1073,13 +1137,22 @@ export function EditableGameDetail({
               ))}
             </div>
           )}
-          <button
-            onClick={handleMarkSetupComplete}
-            disabled={completingSetup}
-            className="px-6 py-3 bg-foreground text-background font-semibold rounded-lg hover:opacity-90 disabled:opacity-50"
-          >
-            {completingSetup ? 'Completing Setup...' : 'Mark Setup Complete'}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={triggerSaveAll}
+              disabled={isSavingAll || !isDirty}
+              className="px-5 py-3 border border-foreground/20 rounded-lg hover:bg-foreground/5 disabled:opacity-40 text-sm font-medium"
+            >
+              {isSavingAll ? 'Saving...' : 'Save My Progress'}
+            </button>
+            <button
+              onClick={handleMarkSetupComplete}
+              disabled={completingSetup}
+              className="px-6 py-3 bg-foreground text-background font-semibold rounded-lg hover:opacity-90 disabled:opacity-50"
+            >
+              {completingSetup ? 'Completing Setup...' : 'Mark Setup Complete'}
+            </button>
+          </div>
         </div>
       )}
     </div>
