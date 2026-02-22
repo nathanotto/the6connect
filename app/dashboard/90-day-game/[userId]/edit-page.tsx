@@ -24,6 +24,8 @@ type Props = {
     innerGameEmpowering: any[];
     obts: any[];
   };
+  gameTitle: string;
+  gameDescription: string;
   gameStatus: string;
   startDate: string;
   endDate: string;
@@ -37,6 +39,8 @@ export function EditableGameDetail({
   currentUserId,
   participant,
   gameData,
+  gameTitle,
+  gameDescription,
   gameStatus,
   startDate,
   endDate,
@@ -371,6 +375,14 @@ export function EditableGameDetail({
         <Link href="/dashboard/90-day-game" className="text-sm text-foreground/60 hover:text-foreground mb-2 block">
           ← Back to Overview
         </Link>
+        {gameTitle && (
+          <div className="mb-3 pb-3 border-b border-foreground/10">
+            <p className="text-base font-semibold text-foreground/80">{gameTitle}</p>
+            {gameDescription && (
+              <p className="text-sm text-foreground/50 mt-0.5">{gameDescription}</p>
+            )}
+          </div>
+        )}
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-2xl md:text-3xl font-bold">
@@ -380,7 +392,7 @@ export function EditableGameDetail({
               <p className="text-lg md:text-xl text-foreground/60 mt-1">"{participant.game_name}"</p>
             )}
             <p className="text-xs md:text-sm text-foreground/60 mt-2">
-              {new Date(startDate).toLocaleDateString()} - {new Date(endDate).toLocaleDateString()} •{' '}
+              {new Date(startDate).toLocaleDateString()} – {new Date(endDate).toLocaleDateString()} •{' '}
               {gameStatus.toUpperCase()}
             </p>
           </div>

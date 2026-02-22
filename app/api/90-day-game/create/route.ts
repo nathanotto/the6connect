@@ -12,9 +12,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { start_date, end_date } = await request.json();
+  const { title, description, start_date, end_date } = await request.json();
 
-  // Validate dates
+  // Validate required fields
+  if (!title?.trim()) {
+    return NextResponse.json({ error: 'Game title is required' }, { status: 400 });
+  }
   if (!start_date || !end_date) {
     return NextResponse.json({ error: 'Start and end dates are required' }, { status: 400 });
   }
@@ -23,6 +26,8 @@ export async function POST(request: Request) {
   const { data: game, error: gameError } = await supabase
     .from('games')
     .insert({
+      title: title.trim(),
+      description: description?.trim() || null,
       start_date,
       end_date,
       status: 'setup',

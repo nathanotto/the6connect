@@ -174,9 +174,12 @@ export default async function NinetyDayGamePage() {
     <div className="space-y-8">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold">The Six 90-Day Game</h1>
-          <p className="text-foreground/60 mt-2">
-            {new Date(currentGame.start_date).toLocaleDateString()} - {new Date(currentGame.end_date).toLocaleDateString()} • {currentGame.status.toUpperCase()}
+          <h1 className="text-3xl font-bold">{currentGame.title || 'The Six 90-Day Game'}</h1>
+          {currentGame.description && (
+            <p className="text-foreground/80 mt-1">{currentGame.description}</p>
+          )}
+          <p className="text-foreground/60 mt-1 text-sm">
+            {new Date(currentGame.start_date).toLocaleDateString()} – {new Date(currentGame.end_date).toLocaleDateString()} • {currentGame.status.toUpperCase()}
           </p>
         </div>
         <div className="flex items-center gap-3">

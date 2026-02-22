@@ -69,12 +69,12 @@ export default async function GameHistoryPage() {
             <div key={game.id} className="border border-foreground/20 rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h2 className="text-xl font-bold">
-                    {new Date(game.start_date).toLocaleDateString()} -{' '}
-                    {new Date(game.end_date).toLocaleDateString()}
-                  </h2>
+                  <h2 className="text-xl font-bold">{game.title || 'Untitled Game'}</h2>
+                  {game.description && (
+                    <p className="text-sm text-foreground/70 mt-0.5">{game.description}</p>
+                  )}
                   <p className="text-sm text-foreground/60 mt-1">
-                    {game.participants.length} participant{game.participants.length !== 1 ? 's' : ''}
+                    {new Date(game.start_date).toLocaleDateString()} – {new Date(game.end_date).toLocaleDateString()} • {game.participants.length} participant{game.participants.length !== 1 ? 's' : ''}
                   </p>
                 </div>
                 <span className="px-3 py-1 bg-green-500/10 text-green-500 text-sm font-medium rounded">

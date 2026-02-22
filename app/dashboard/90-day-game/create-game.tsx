@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 
 export function CreateGameButton() {
   const [showModal, setShowModal] = useState(false);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [creating, setCreating] = useState(false);
@@ -12,6 +14,10 @@ export function CreateGameButton() {
   const router = useRouter();
 
   const handleCreate = async () => {
+    if (!title.trim()) {
+      setError('Please provide a game title');
+      return;
+    }
     if (!startDate || !endDate) {
       setError('Please provide both start and end dates');
       return;
@@ -24,7 +30,7 @@ export function CreateGameButton() {
       const res = await fetch('/api/90-day-game/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ start_date: startDate, end_date: endDate }),
+        body: JSON.stringify({ title: title.trim(), description: description.trim(), start_date: startDate, end_date: endDate }),
       });
 
       if (res.ok) {
@@ -68,6 +74,29 @@ export function CreateGameButton() {
             <h2 className="text-2xl font-bold mb-4">Create New 90-Day Game</h2>
 
             <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium mb-2">Game Title *</label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g. Q1 2026 — Health & Business"
+                  maxLength={80}
+                  className="w-full px-3 py-2 border border-foreground/20 rounded bg-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Description</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="What is this game cycle about? What's the shared focus?"
+                  rows={3}
+                  className="w-full px-3 py-2 border border-foreground/20 rounded bg-transparent resize-none"
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium mb-2">Start Date</label>
                 <input

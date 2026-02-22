@@ -113,6 +113,8 @@ export default async function GameDetailPage({ params }: PageProps) {
         innerGameEmpowering: innerGameEmpowering.data || [],
         obts: obts.data || [],
       }}
+      gameTitle={activeGame.title || ''}
+      gameDescription={activeGame.description || ''}
       gameStatus={activeGame.status}
       startDate={activeGame.start_date}
       endDate={activeGame.end_date}
