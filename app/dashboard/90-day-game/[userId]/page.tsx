@@ -29,7 +29,7 @@ export default async function GameDetailPage({ params }: PageProps) {
   const { data: activeGame } = await supabase
     .from('games')
     .select('*')
-    .in('status', ['active', 'completed'])
+    .in('status', ['setup', 'active', 'completed'])
     .order('created_at', { ascending: false })
     .limit(1)
     .single();

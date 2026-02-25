@@ -47,6 +47,7 @@ export function EditableGameDetail({
   endDate,
 }: Props) {
   const isOwnGame = userId === currentUserId;
+  const canEdit = isOwnGame && gameStatus !== 'completed' && !participant.game_complete;
 
   const [gameName, setGameName] = useState(participant.game_name || '');
   const [vision, setVision] = useState(gameData.vision);
@@ -135,7 +136,7 @@ export function EditableGameDetail({
 
   // Auto-save every 30 seconds if dirty
   useEffect(() => {
-    if (!isOwnGame || gameStatus !== 'setup') return;
+    if (!canEdit) return;
     const interval = setInterval(() => {
       if (stateRef.current.isDirty) {
         triggerSaveAll();
@@ -147,7 +148,7 @@ export function EditableGameDetail({
 
   // Save functions
   const saveVision = async (content: string, completion_percentage: number) => {
-    if (!isOwnGame) return;
+    if (!canEdit) return;
     setSaving(true);
     try {
       const res = await fetch('/api/90-day-game/vision', {
@@ -165,7 +166,7 @@ export function EditableGameDetail({
   };
 
   const saveWhy = async (content: string, completion_percentage: number) => {
-    if (!isOwnGame) return;
+    if (!canEdit) return;
     setSaving(true);
     try {
       const res = await fetch('/api/90-day-game/why', {
@@ -183,7 +184,7 @@ export function EditableGameDetail({
   };
 
   const saveObjective = async (content: string, completion_percentage: number) => {
-    if (!isOwnGame) return;
+    if (!canEdit) return;
     setSaving(true);
     try {
       const res = await fetch('/api/90-day-game/objective', {
@@ -201,7 +202,7 @@ export function EditableGameDetail({
   };
 
   const saveKeyResult = async (kr: any) => {
-    if (!isOwnGame) return;
+    if (!canEdit) return;
     setSaving(true);
     try {
       const res = await fetch('/api/90-day-game/key-results', {
@@ -219,7 +220,7 @@ export function EditableGameDetail({
   };
 
   const addKeyResult = async () => {
-    if (!isOwnGame) return;
+    if (!canEdit) return;
     setSaving(true);
     try {
       const res = await fetch('/api/90-day-game/key-results', {
@@ -244,7 +245,7 @@ export function EditableGameDetail({
   };
 
   const deleteKeyResult = async (id: string) => {
-    if (!isOwnGame) return;
+    if (!canEdit) return;
     setSaving(true);
     try {
       const res = await fetch(`/api/90-day-game/key-results?id=${id}`, { method: 'DELETE' });
@@ -257,7 +258,7 @@ export function EditableGameDetail({
   };
 
   const saveProject = async (project: any) => {
-    if (!isOwnGame) return;
+    if (!canEdit) return;
     setSaving(true);
     try {
       const res = await fetch('/api/90-day-game/projects', {
@@ -275,7 +276,7 @@ export function EditableGameDetail({
   };
 
   const addProject = async () => {
-    if (!isOwnGame) return;
+    if (!canEdit) return;
     setSaving(true);
     try {
       const res = await fetch('/api/90-day-game/projects', {
@@ -300,7 +301,7 @@ export function EditableGameDetail({
   };
 
   const deleteProject = async (id: string) => {
-    if (!isOwnGame) return;
+    if (!canEdit) return;
     setSaving(true);
     try {
       const res = await fetch(`/api/90-day-game/projects?id=${id}`, { method: 'DELETE' });
@@ -313,7 +314,7 @@ export function EditableGameDetail({
   };
 
   const saveInnerGame = async (item: any) => {
-    if (!isOwnGame) return;
+    if (!canEdit) return;
     setSaving(true);
     try {
       const res = await fetch('/api/90-day-game/inner-game', {
@@ -369,7 +370,7 @@ export function EditableGameDetail({
   };
 
   const deleteInnerGameItem = async (id: string, item_type: 'limiting' | 'empowering') => {
-    if (!isOwnGame) return;
+    if (!canEdit) return;
     setSaving(true);
     try {
       const res = await fetch(`/api/90-day-game/inner-game?id=${id}`, { method: 'DELETE' });
@@ -386,7 +387,7 @@ export function EditableGameDetail({
   };
 
   const saveOBT = async (obt: any) => {
-    if (!isOwnGame) return;
+    if (!canEdit) return;
     setSaving(true);
     try {
       const res = await fetch('/api/90-day-game/one-big-things', {
@@ -409,7 +410,7 @@ export function EditableGameDetail({
   };
 
   const saveGameName = async (name: string) => {
-    if (!isOwnGame) return;
+    if (!canEdit) return;
     await fetch('/api/90-day-game/participant', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -418,7 +419,7 @@ export function EditableGameDetail({
   };
 
   const triggerSaveAll = async () => {
-    if (!isOwnGame) return;
+    if (!canEdit) return;
     const s = stateRef.current;
     setIsSavingAll(true);
     try {
@@ -538,10 +539,13 @@ export function EditableGameDetail({
         </div>
       </div>
 
-      {!isOwnGame && (
+      {!canEdit && (
         <div className="bg-foreground/5 border border-foreground/20 rounded-lg p-4 text-sm text-foreground/60">
-          You are viewing {participant.user.display_name || participant.user.full_name}'s game. You cannot edit their
-          data.
+          {!isOwnGame
+            ? `You are viewing ${participant.user.display_name || participant.user.full_name}'s game. You cannot edit their data.`
+            : participant.game_complete
+            ? 'You have completed and archived your game.'
+            : 'This game has been completed.'}
         </div>
       )}
 
@@ -554,7 +558,7 @@ export function EditableGameDetail({
           value={gameName}
           onChange={(e) => setGameName(e.target.value.slice(0, 150))}
           onBlur={(e) => saveGameName(e.target.value)}
-          disabled={!isOwnGame}
+          disabled={!canEdit}
           placeholder='e.g., "D.O. or Die", "Foundation Year"'
           className="w-full px-3 py-2 bg-transparent border border-foreground/20 rounded disabled:opacity-50 disabled:border-transparent"
           maxLength={150}
@@ -575,7 +579,7 @@ export function EditableGameDetail({
               setVision({ ...vision, completion_percentage: newVal });
             }}
             onBlur={(e) => saveVision(vision?.content || '', parseInt(e.target.value) || 0)}
-            disabled={!isOwnGame}
+            disabled={!canEdit}
             className="w-14 md:w-16 text-base md:text-lg font-bold text-right bg-transparent border border-foreground/20 rounded px-2 py-1 disabled:opacity-50 min-h-[44px]"
           />
         </div>
@@ -583,7 +587,7 @@ export function EditableGameDetail({
           value={vision?.content || ''}
           onChange={(e) => setVision({ ...vision, content: e.target.value })}
           onBlur={(e) => saveVision(e.target.value, vision?.completion_percentage || 0)}
-          disabled={!isOwnGame}
+          disabled={!canEdit}
           className="w-full min-h-[100px] text-foreground/80 leading-relaxed bg-transparent border border-foreground/20 rounded p-3 disabled:opacity-50 disabled:border-transparent"
           placeholder="Enter your vision statement..."
         />
@@ -603,7 +607,7 @@ export function EditableGameDetail({
               setWhy({ ...why, completion_percentage: newVal });
             }}
             onBlur={(e) => saveWhy(why?.content || '', parseInt(e.target.value) || 0)}
-            disabled={!isOwnGame}
+            disabled={!canEdit}
             className="w-14 md:w-16 text-base md:text-lg font-bold text-right bg-transparent border border-foreground/20 rounded px-2 py-1 disabled:opacity-50 min-h-[44px]"
           />
         </div>
@@ -611,7 +615,7 @@ export function EditableGameDetail({
           value={why?.content || ''}
           onChange={(e) => setWhy({ ...why, content: e.target.value })}
           onBlur={(e) => saveWhy(e.target.value, why?.completion_percentage || 0)}
-          disabled={!isOwnGame}
+          disabled={!canEdit}
           className="w-full min-h-[100px] text-foreground/80 leading-relaxed bg-transparent border border-foreground/20 rounded p-3 disabled:opacity-50 disabled:border-transparent"
           placeholder="Enter your why statement..."
         />
@@ -631,7 +635,7 @@ export function EditableGameDetail({
               setObjective({ ...objective, completion_percentage: newVal });
             }}
             onBlur={(e) => saveObjective(objective?.content || '', parseInt(e.target.value) || 0)}
-            disabled={!isOwnGame}
+            disabled={!canEdit}
             className="w-14 md:w-16 text-base md:text-lg font-bold text-right bg-transparent border border-foreground/20 rounded px-2 py-1 disabled:opacity-50 min-h-[44px]"
           />
         </div>
@@ -639,7 +643,7 @@ export function EditableGameDetail({
           value={objective?.content || ''}
           onChange={(e) => setObjective({ ...objective, content: e.target.value })}
           onBlur={(e) => saveObjective(e.target.value, objective?.completion_percentage || 0)}
-          disabled={!isOwnGame}
+          disabled={!canEdit}
           className="w-full min-h-[100px] text-foreground/80 leading-relaxed bg-transparent border border-foreground/20 rounded p-3 disabled:opacity-50 disabled:border-transparent"
           placeholder="Enter your objective..."
         />
@@ -661,11 +665,11 @@ export function EditableGameDetail({
                     setKeyResults(keyResults.map((k) => (k.id === kr.id ? { ...k, description: e.target.value } : k)));
                   }}
                   onBlur={() => saveKeyResult(kr)}
-                  disabled={!isOwnGame}
+                  disabled={!canEdit}
                   className="flex-1 text-sm bg-transparent border border-foreground/10 rounded p-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
                   rows={2}
                 />
-                {isOwnGame && (
+                {canEdit && (
                   <button
                     onClick={() => deleteKeyResult(kr.id)}
                     className="text-foreground/30 hover:text-red-500 text-lg leading-none pt-2 shrink-0"
@@ -688,7 +692,7 @@ export function EditableGameDetail({
                       setKeyResults(keyResults.map((k) => (k.id === kr.id ? updated : k)));
                     }}
                     onBlur={() => saveKeyResult(kr)}
-                    disabled={!isOwnGame}
+                    disabled={!canEdit}
                     className="w-16 text-right bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50"
                   />
                   <span>%</span>
@@ -705,7 +709,7 @@ export function EditableGameDetail({
                       setKeyResults(keyResults.map((k) => (k.id === kr.id ? updated : k)));
                     }}
                     onBlur={() => saveKeyResult(kr)}
-                    disabled={!isOwnGame}
+                    disabled={!canEdit}
                     className="w-16 text-right bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50"
                   />
                   <span>%</span>
@@ -717,7 +721,7 @@ export function EditableGameDetail({
                     setKeyResults(keyResults.map((k) => (k.id === kr.id ? { ...k, notes: e.target.value } : k)));
                   }}
                   onBlur={() => saveKeyResult(kr)}
-                  disabled={!isOwnGame}
+                  disabled={!canEdit}
                   placeholder="Notes..."
                   className="flex-1 text-sm bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
                 />
@@ -725,7 +729,7 @@ export function EditableGameDetail({
             </div>
           ))}
         </div>
-        {isOwnGame && (
+        {canEdit && (
           <button
             onClick={addKeyResult}
             disabled={saving}
@@ -754,11 +758,11 @@ export function EditableGameDetail({
                     );
                   }}
                   onBlur={() => saveProject(project)}
-                  disabled={!isOwnGame}
+                  disabled={!canEdit}
                   className="flex-1 text-sm bg-transparent border border-foreground/10 rounded p-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
                   rows={3}
                 />
-                {isOwnGame && (
+                {canEdit && (
                   <button
                     onClick={() => deleteProject(project.id)}
                     className="text-foreground/30 hover:text-red-500 text-lg leading-none pt-2 shrink-0"
@@ -781,7 +785,7 @@ export function EditableGameDetail({
                       setProjects(projects.map((p) => (p.id === project.id ? updated : p)));
                     }}
                     onBlur={() => saveProject(project)}
-                    disabled={!isOwnGame}
+                    disabled={!canEdit}
                     className="w-16 text-right bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50"
                   />
                   <span>%</span>
@@ -798,7 +802,7 @@ export function EditableGameDetail({
                       setProjects(projects.map((p) => (p.id === project.id ? updated : p)));
                     }}
                     onBlur={() => saveProject(project)}
-                    disabled={!isOwnGame}
+                    disabled={!canEdit}
                     className="w-16 text-right bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50"
                   />
                   <span>%</span>
@@ -810,7 +814,7 @@ export function EditableGameDetail({
                     setProjects(projects.map((p) => (p.id === project.id ? { ...p, notes: e.target.value } : p)));
                   }}
                   onBlur={() => saveProject(project)}
-                  disabled={!isOwnGame}
+                  disabled={!canEdit}
                   placeholder="Notes..."
                   className="flex-1 text-sm bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
                 />
@@ -818,7 +822,7 @@ export function EditableGameDetail({
             </div>
           ))}
         </div>
-        {isOwnGame && (
+        {canEdit && (
           <button
             onClick={addProject}
             disabled={saving}
@@ -853,7 +857,7 @@ export function EditableGameDetail({
                       );
                     }}
                     onBlur={() => saveInnerGame(item)}
-                    disabled={!isOwnGame}
+                    disabled={!canEdit}
                     className="flex-1 text-sm bg-transparent border border-foreground/10 rounded px-2 py-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
                   />
                   <div className="flex items-center gap-2">
@@ -867,11 +871,11 @@ export function EditableGameDetail({
                         setInnerGameLimiting(innerGameLimiting.map((i) => (i.id === item.id ? updated : i)));
                       }}
                       onBlur={() => saveInnerGame(item)}
-                      disabled={!isOwnGame}
+                      disabled={!canEdit}
                       className="w-14 text-center font-bold bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50"
                     />
                     <span className="text-sm">/5</span>
-                    {isOwnGame && (
+                    {canEdit && (
                       <button
                         onClick={() => deleteInnerGameItem(item.id, 'limiting')}
                         className="text-foreground/30 hover:text-red-500 text-lg leading-none"
@@ -885,7 +889,7 @@ export function EditableGameDetail({
               </div>
             ))}
           </div>
-          {isOwnGame && (
+          {canEdit && (
             <div className="mt-2">
               {!showAddLimiting ? (
                 <button
@@ -953,7 +957,7 @@ export function EditableGameDetail({
                       );
                     }}
                     onBlur={() => saveInnerGame(item)}
-                    disabled={!isOwnGame}
+                    disabled={!canEdit}
                     className="flex-1 text-sm bg-transparent border border-foreground/10 rounded px-2 py-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
                   />
                   <div className="flex items-center gap-2">
@@ -967,11 +971,11 @@ export function EditableGameDetail({
                         setInnerGameEmpowering(innerGameEmpowering.map((i) => (i.id === item.id ? updated : i)));
                       }}
                       onBlur={() => saveInnerGame(item)}
-                      disabled={!isOwnGame}
+                      disabled={!canEdit}
                       className="w-14 text-center font-bold bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50"
                     />
                     <span className="text-sm">/5</span>
-                    {isOwnGame && (
+                    {canEdit && (
                       <button
                         onClick={() => deleteInnerGameItem(item.id, 'empowering')}
                         className="text-foreground/30 hover:text-red-500 text-lg leading-none"
@@ -985,7 +989,7 @@ export function EditableGameDetail({
               </div>
             ))}
           </div>
-          {isOwnGame && (
+          {canEdit && (
             <div className="mt-2">
               {!showAddEmpowering ? (
                 <button
@@ -1072,7 +1076,7 @@ export function EditableGameDetail({
                       });
                       saveOBT(updated);
                     }}
-                    disabled={!isOwnGame}
+                    disabled={!canEdit}
                     className="text-sm font-bold bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50 min-h-[44px]"
                   >
                     <option value="0">0%</option>
@@ -1091,7 +1095,7 @@ export function EditableGameDetail({
                     });
                   }}
                   onBlur={() => { if (obt.description) saveOBT(obt); }}
-                  disabled={!isOwnGame}
+                  disabled={!canEdit}
                   placeholder="What's your One Big Thing for this bi-week?"
                   className="w-full text-sm bg-transparent border border-foreground/10 rounded p-2 mb-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
                   rows={2}
@@ -1109,7 +1113,7 @@ export function EditableGameDetail({
                     });
                   }}
                   onBlur={() => { if (obt.description) saveOBT(obt); }}
-                  disabled={!isOwnGame}
+                  disabled={!canEdit}
                   placeholder="Notes..."
                   className="w-full text-xs text-foreground/60 bg-transparent border border-foreground/10 rounded px-2 py-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
                 />
@@ -1119,8 +1123,13 @@ export function EditableGameDetail({
         </div>
       </div>
 
+      {/* Complete and Archive — active games only */}
+      {gameStatus === 'active' && canEdit && (
+        <CompleteAndArchive gameId={gameId} />
+      )}
+
       {/* Mark Setup Complete */}
-      {gameStatus === 'setup' && isOwnGame && (
+      {gameStatus === 'setup' && canEdit && (
         <div className="border border-foreground/20 rounded-lg p-4 md:p-6">
           <h2 className="text-lg md:text-xl font-semibold mb-2">Complete Setup</h2>
           <p className="text-sm text-foreground/60 mb-4">
@@ -1151,6 +1160,87 @@ export function EditableGameDetail({
               className="px-6 py-3 bg-foreground text-background font-semibold rounded-lg hover:opacity-90 disabled:opacity-50"
             >
               {completingSetup ? 'Completing Setup...' : 'Mark Setup Complete'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CompleteAndArchive({ gameId }: { gameId: string }) {
+  const [confirming, setConfirming] = useState(false);
+  const [completing, setCompleting] = useState(false);
+  const [done, setDone] = useState(false);
+  const [allComplete, setAllComplete] = useState(false);
+  const router = useRouter();
+
+  const handleComplete = async () => {
+    setCompleting(true);
+    try {
+      const res = await fetch('/api/90-day-game/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gameId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAllComplete(data.allComplete);
+        setDone(true);
+        if (data.allComplete) {
+          setTimeout(() => router.push('/dashboard/90-day-game'), 2000);
+        }
+      }
+    } finally {
+      setCompleting(false);
+      setConfirming(false);
+    }
+  };
+
+  if (done) {
+    return (
+      <div className="border border-green-500/30 bg-green-500/5 rounded-lg p-4 md:p-6">
+        <p className="font-semibold text-green-600 dark:text-green-400">
+          {allComplete
+            ? 'All games complete! The game is now archived. Redirecting...'
+            : 'Your game has been completed and archived.'}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="border border-foreground/20 rounded-lg p-4 md:p-6">
+      <h2 className="text-lg md:text-xl font-semibold mb-2">Complete and Archive My Game</h2>
+      <p className="text-sm text-foreground/60 mb-4">
+        When you are done with this 90-day game, archive your branch. Once all men have archived, the game is
+        marked complete.
+      </p>
+      {!confirming ? (
+        <button
+          onClick={() => setConfirming(true)}
+          className="px-5 py-3 border border-foreground/30 rounded-lg hover:bg-foreground/5 text-sm font-medium"
+        >
+          Complete and Archive My Game
+        </button>
+      ) : (
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-foreground/80">
+            Are you sure? You will not be able to edit your game after this.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={handleComplete}
+              disabled={completing}
+              className="px-5 py-3 bg-foreground text-background font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 text-sm"
+            >
+              {completing ? 'Archiving...' : 'Yes, Archive My Game'}
+            </button>
+            <button
+              onClick={() => setConfirming(false)}
+              className="px-5 py-3 border border-foreground/20 rounded-lg hover:bg-foreground/5 text-sm"
+            >
+              Cancel
             </button>
           </div>
         </div>
