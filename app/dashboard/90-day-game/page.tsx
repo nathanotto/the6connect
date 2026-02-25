@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { CreateGameButton } from './create-game';
 import { SetupView } from './setup-view';
+import { CurrentGameGrid } from './current-game-grid';
 
 // Score calculation functions
 function calculateWeightedScore(items: Array<{ weight_percentage: number; completion_percentage: number }>) {
@@ -100,10 +101,14 @@ export default async function NinetyDayGamePage() {
       })
     );
 
-    const optedInParticipants = (participants || []).filter((p: any) => p.opted_in);
-
     return (
       <div className="space-y-8">
+        <CurrentGameGrid
+          participants={participants || []}
+          currentUserId={user.id}
+          gameId={currentGame.id}
+        />
+
         <SetupView
           gameId={currentGame.id}
           gameTitle={currentGame.title || ''}
@@ -112,32 +117,6 @@ export default async function NinetyDayGamePage() {
           currentUserId={user.id}
           participants={participants || []}
         />
-
-        {optedInParticipants.length > 0 && (
-          <div>
-            <h2 className="text-xl font-semibold mb-3">Games in Progress</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {optedInParticipants.map((p: any) => (
-                <Link
-                  key={p.id}
-                  href={`/dashboard/90-day-game/${p.user_id}`}
-                  className="border border-foreground/20 rounded-lg p-4 text-center hover:border-foreground/40 transition-colors"
-                >
-                  <p className="font-medium text-sm">{p.user.display_name || p.user.full_name}</p>
-                  {p.game_name && (
-                    <p className="text-xs text-foreground/60 mt-1">"{p.game_name}"</p>
-                  )}
-                  <p className="text-xs text-foreground/50 mt-2">
-                    {p.setup_complete ? 'Setup complete' : 'Setting up...'}
-                  </p>
-                  <span className="text-xs text-foreground/60 hover:text-foreground underline mt-2 block">
-                    {p.user_id === user.id ? 'My Game →' : 'View Game →'}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
 
         {pastGames.length > 0 && (
           <div>
