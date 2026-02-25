@@ -43,7 +43,6 @@ export function CurrentGameGrid({ participants, currentUserId, gameId }: Props) 
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-3">Current Game</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {participants.map((p) => {
           const isOwn = p.user_id === currentUserId;

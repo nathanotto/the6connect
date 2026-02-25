@@ -7,8 +7,8 @@
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { CreateGameButton } from './create-game';
-import { SetupView } from './setup-view';
 import { CurrentGameGrid } from './current-game-grid';
+import { ActivateGameButton } from './activate-game-button';
 
 // Score calculation functions
 function calculateWeightedScore(items: Array<{ weight_percentage: number; completion_percentage: number }>) {
@@ -101,21 +101,36 @@ export default async function NinetyDayGamePage() {
       })
     );
 
+    const optedInParticipants = (participants || []).filter((p: any) => p.opted_in);
+    const canActivate = optedInParticipants.length > 0 && optedInParticipants.every((p: any) => p.setup_complete);
+    const notReadyNames = optedInParticipants
+      .filter((p: any) => !p.setup_complete)
+      .map((p: any) => p.user.display_name || p.user.full_name);
+
+    const startFormatted = new Date(currentGame.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const endFormatted = new Date(currentGame.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
     return (
       <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold">
+            {currentGame.title || '90-Day Game'} -- {startFormatted} – {endFormatted}
+          </h1>
+          {currentGame.description && (
+            <p className="text-foreground/80 mt-1">{currentGame.description}</p>
+          )}
+        </div>
+
         <CurrentGameGrid
           participants={participants || []}
           currentUserId={user.id}
           gameId={currentGame.id}
         />
 
-        <SetupView
+        <ActivateGameButton
           gameId={currentGame.id}
-          gameTitle={currentGame.title || ''}
-          startDate={currentGame.start_date}
-          endDate={currentGame.end_date}
-          currentUserId={user.id}
-          participants={participants || []}
+          canActivate={canActivate}
+          notReadyNames={notReadyNames}
         />
 
         {pastGames.length > 0 && (
