@@ -251,6 +251,15 @@ export default async function NinetyDayGamePage() {
       return {
         ...participant,
         overallScore,
+        scores: {
+          vision: Math.round(visionScore),
+          why: Math.round(whyScore),
+          objective: Math.round(objectiveScore),
+          keyResults: Math.round(keyResultsScore),
+          projects: Math.round(projectsScore),
+          innerGame: Math.round(innerGameScore),
+          obts: Math.round(obtsScore),
+        },
       };
     })
   );
@@ -283,27 +292,48 @@ export default async function NinetyDayGamePage() {
         {gameData?.map((participant: any) => (
           <div
             key={participant.id}
-            className="border border-foreground/20 rounded-lg p-6 text-center hover:border-foreground/40 transition-colors"
+            className="border border-foreground/20 rounded-lg p-4 hover:border-foreground/40 transition-colors"
           >
-            <h3 className="font-bold text-lg mb-2">
+            <h3 className="font-bold text-sm mb-0.5">
               {participant.user.display_name || participant.user.full_name}
             </h3>
             {participant.game_name && (
-              <p className="text-sm text-foreground/60 mb-4">
-                "{participant.game_name}"
-              </p>
+              <p className="text-xs text-foreground/50 mb-3">"{participant.game_name}"</p>
             )}
             {participant.game_image_url && (
               <img
                 src={participant.game_image_url}
                 alt={participant.game_name}
-                className="w-full h-32 object-cover rounded mb-4"
+                className="w-full h-24 object-cover rounded mb-3"
               />
             )}
-            <div className="text-3xl font-bold mb-4">{participant.overallScore}%</div>
+
+            <table className="w-full text-xs mb-3">
+              <tbody>
+                {[
+                  ['Vision',      participant.scores.vision],
+                  ['Why',         participant.scores.why],
+                  ['Objective',   participant.scores.objective],
+                  ['Key Results', participant.scores.keyResults],
+                  ['Projects',    participant.scores.projects],
+                  ['Inner Game',  participant.scores.innerGame],
+                  ['OBTs',        participant.scores.obts],
+                ].map(([label, score]) => (
+                  <tr key={label} className="border-b border-foreground/5 last:border-0">
+                    <td className="py-0.5 text-foreground/60">{label}</td>
+                    <td className="py-0.5 text-right font-medium tabular-nums">{score}%</td>
+                  </tr>
+                ))}
+                <tr className="border-t border-foreground/20">
+                  <td className="pt-1.5 font-semibold">Overall</td>
+                  <td className="pt-1.5 text-right font-bold tabular-nums">{participant.overallScore}%</td>
+                </tr>
+              </tbody>
+            </table>
+
             <Link
               href={`/dashboard/90-day-game/${participant.user_id}`}
-              className="text-sm text-foreground/80 hover:text-foreground underline"
+              className="text-xs text-foreground/60 hover:text-foreground underline"
             >
               View Full Game →
             </Link>
