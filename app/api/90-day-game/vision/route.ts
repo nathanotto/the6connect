@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { logGameActivity } from '@/lib/game-activity-log';
 
 export async function PUT(request: Request) {
   const supabase = await createClient();
@@ -35,6 +36,11 @@ export async function PUT(request: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  await logGameActivity(supabase, user.id, 'game_vision_updated', gameId, {
+    section: 'Vision',
+    completion_percentage,
+  });
 
   return NextResponse.json(data);
 }

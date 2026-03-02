@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { logGameActivity } from '@/lib/game-activity-log';
 
 // Update participant info (opt-in, game name, image, setup_complete)
 export async function PUT(request: Request) {
@@ -31,6 +32,19 @@ export async function PUT(request: Request) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (game_name !== undefined) {
+    await logGameActivity(supabase, user.id, 'game_name_updated', gameId, {
+      section: 'Setup',
+      game_name,
+    });
+  }
+
+  if (setup_complete === true) {
+    await logGameActivity(supabase, user.id, 'game_setup_completed', gameId, {
+      section: 'Setup',
+    });
   }
 
   return NextResponse.json(data);

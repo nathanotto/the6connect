@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { logGameActivity } from '@/lib/game-activity-log';
 
 // Update existing key result
 export async function PUT(request: Request) {
@@ -25,13 +26,19 @@ export async function PUT(request: Request) {
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
-    .eq('user_id', user.id) // Ensure user can only update their own
+    .eq('user_id', user.id)
     .select()
     .single();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  await logGameActivity(supabase, user.id, 'game_key_result_updated', data.game_id, {
+    section: 'Key Results',
+    description: description?.slice(0, 60),
+    completion_percentage,
+  });
 
   return NextResponse.json(data);
 }
@@ -68,6 +75,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  await logGameActivity(supabase, user.id, 'game_key_result_added', gameId, {
+    section: 'Key Results',
+    description: description?.slice(0, 60),
+  });
+
   return NextResponse.json(data);
 }
 
@@ -90,14 +102,29 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
   }
 
+  // Fetch before delete so we can log game_id and description
+  const { data: record } = await supabase
+    .from('game_key_results')
+    .select('game_id, description')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .single();
+
   const { error } = await supabase
     .from('game_key_results')
     .delete()
     .eq('id', id)
-    .eq('user_id', user.id); // Ensure user can only delete their own
+    .eq('user_id', user.id);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (record) {
+    await logGameActivity(supabase, user.id, 'game_key_result_deleted', record.game_id, {
+      section: 'Key Results',
+      description: record.description?.slice(0, 60),
+    });
   }
 
   return NextResponse.json({ success: true });
