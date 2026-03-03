@@ -1055,6 +1055,12 @@ export function EditableGameDetail({
               completion_percentage: 0,
               notes: '',
             };
+            const periodStart = new Date(startDate);
+            periodStart.setDate(periodStart.getDate() + (weekNum - 1) * 14);
+            const periodEnd = new Date(startDate);
+            periodEnd.setDate(periodEnd.getDate() + weekNum * 14 - 1);
+            const fmtOpt: Intl.DateTimeFormatOptions = { month: 'numeric', day: 'numeric', timeZone: 'UTC' };
+            const periodLabel = `WEEKS ${2 * weekNum - 1}–${2 * weekNum}: ${periodStart.toLocaleDateString('en-US', fmtOpt)} – ${periodEnd.toLocaleDateString('en-US', fmtOpt)}`;
             return (
               <div
                 key={weekNum}
@@ -1063,7 +1069,7 @@ export function EditableGameDetail({
                 }`}
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className="text-xs font-semibold text-foreground/60">WEEK {weekNum}</span>
+                  <span className="text-xs font-semibold text-foreground/60">{periodLabel}</span>
                   <select
                     value={obt.completion_percentage}
                     onChange={(e) => {

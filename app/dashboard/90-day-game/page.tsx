@@ -9,7 +9,9 @@ import Link from 'next/link';
 import { CreateGameButton } from './create-game';
 import { CurrentGameGrid } from './current-game-grid';
 import { ActivateGameButton } from './activate-game-button';
-import { formatActivityMessage } from '@/lib/game-activity-log';
+import { GameProgressBar } from './game-progress-bar';
+import { UpdatesFeed } from './updates-feed';
+import type { PersonGroup } from './updates-feed';
 
 // Score calculation functions
 function calculateWeightedScore(items: Array<{ weight_percentage: number; completion_percentage: number }>) {
@@ -34,17 +36,6 @@ function calculateOBTScore(items: Array<{ completion_percentage: number }>) {
   if (!items || items.length === 0) return 0;
   const total = items.reduce((sum, item) => sum + (item.completion_percentage || 0), 0);
   return total / items.length;
-}
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const days = Math.floor(diff / 86400000);
-  const hours = Math.floor(diff / 3600000);
-  const minutes = Math.floor(diff / 60000);
-  if (days > 0) return `${days}d ago`;
-  if (hours > 0) return `${hours}h ago`;
-  if (minutes > 0) return `${minutes}m ago`;
-  return 'just now';
 }
 
 export default async function NinetyDayGamePage() {
@@ -276,27 +267,25 @@ export default async function NinetyDayGamePage() {
     })
   );
 
-  // Fetch recent activity log for this game
+  // Fetch recent activity log for this game (enough to cover all participants)
   const { data: activityLog } = await supabase
     .from('activity_log')
-    .select('*, user:users(id, display_name, full_name)')
+    .select('id, user_id, activity_type, metadata, created_at')
     .eq('entity_type', 'games')
     .eq('entity_id', currentGame.id)
     .order('created_at', { ascending: false })
-    .limit(15);
+    .limit(50);
 
-  // Compute staleness: last activity per opted-in participant
-  const STALE_DAYS = 3;
-  const staleThreshold = STALE_DAYS * 24 * 60 * 60 * 1000;
-  const now = Date.now();
-  const stalenessMap: Record<string, { lastActivity: string | null; isStale: boolean }> = {};
-  for (const p of gameData) {
-    const lastEntry = (activityLog || []).find((a: any) => a.user_id === p.user_id);
-    const lastActivity = lastEntry?.created_at ?? null;
-    const isStale = !lastActivity || now - new Date(lastActivity).getTime() > staleThreshold;
-    stalenessMap[p.user_id] = { lastActivity, isStale };
-  }
-  const staleParticipants = gameData.filter((p) => stalenessMap[p.user_id]?.isStale);
+  // Group activity by participant, preserving participant card order
+  const groups: PersonGroup[] = gameData.map((p) => {
+    const entries = (activityLog || []).filter((a: any) => a.user_id === p.user_id);
+    return {
+      userId: p.user_id,
+      name: p.user?.display_name || p.user?.full_name || 'Unknown',
+      lastActivity: entries.length > 0 ? entries[0].created_at : null,
+      entries,
+    };
+  });
 
   return (
     <div className="space-y-8">
@@ -320,6 +309,9 @@ export default async function NinetyDayGamePage() {
           </Link>
         </div>
       </div>
+
+      {/* Game Timeline */}
+      <GameProgressBar startDate={currentGame.start_date} endDate={currentGame.end_date} />
 
       {/* Participant Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -375,50 +367,7 @@ export default async function NinetyDayGamePage() {
         ))}
       </div>
 
-      <div className="border border-foreground/20 rounded-lg p-6">
-        <h2 className="text-lg font-semibold mb-4">Recent Updates</h2>
-        {activityLog && activityLog.length > 0 ? (
-          <ul className="space-y-2">
-            {activityLog.map((entry: any) => {
-              const name = entry.user?.display_name || entry.user?.full_name || 'Someone';
-              const message = formatActivityMessage(entry.activity_type, entry.metadata);
-              return (
-                <li key={entry.id} className="flex items-baseline gap-2 text-sm">
-                  <span className="font-medium shrink-0">{name}</span>
-                  <span className="text-foreground/70">{message}</span>
-                  <span className="text-foreground/40 text-xs shrink-0 ml-auto">{timeAgo(entry.created_at)}</span>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p className="text-sm text-foreground/60">No updates yet.</p>
-        )}
-      </div>
-
-      <div className="border border-foreground/20 rounded-lg p-6">
-        <h2 className="text-lg font-semibold mb-4">Staleness Alerts</h2>
-        {staleParticipants.length > 0 ? (
-          <ul className="space-y-2">
-            {staleParticipants.map((p: any) => {
-              const name = p.user?.display_name || p.user?.full_name || 'Someone';
-              const info = stalenessMap[p.user_id];
-              return (
-                <li key={p.id} className="flex items-baseline gap-2 text-sm">
-                  <span className="font-medium text-amber-400 shrink-0">{name}</span>
-                  <span className="text-foreground/70">
-                    {info.lastActivity
-                      ? `last updated ${timeAgo(info.lastActivity)}`
-                      : 'no updates recorded'}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p className="text-sm text-green-500">All participants active within the last {STALE_DAYS} days.</p>
-        )}
-      </div>
+      <UpdatesFeed groups={groups} />
     </div>
   );
 }
