@@ -16,6 +16,13 @@ export async function PUT(request: Request) {
 
   const { id, description, weight_percentage, completion_percentage, notes } = await request.json();
 
+  const { data: existing } = await supabase
+    .from('game_key_results')
+    .select('completion_percentage')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .single();
+
   const { data, error } = await supabase
     .from('game_key_results')
     .update({
@@ -34,11 +41,13 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  await logGameActivity(supabase, user.id, 'game_key_result_updated', data.game_id, {
-    section: 'Key Results',
-    description: description?.slice(0, 60),
-    completion_percentage,
-  });
+  if (existing?.completion_percentage !== completion_percentage) {
+    await logGameActivity(supabase, user.id, 'game_key_result_updated', data.game_id, {
+      section: 'Key Results',
+      description: description?.slice(0, 60),
+      completion_percentage,
+    });
+  }
 
   return NextResponse.json(data);
 }

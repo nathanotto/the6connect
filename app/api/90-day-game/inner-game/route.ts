@@ -32,12 +32,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  await logGameActivity(supabase, user.id, 'game_inner_game_updated', data.game_id, {
-    section: 'Inner Game',
-    item_type: data.item_type,
-    category: data.category,
-    rating,
-  });
+  // Inner game items have no completion_percentage — updates not logged per policy
 
   return NextResponse.json(data);
 }

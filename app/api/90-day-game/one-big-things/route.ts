@@ -15,6 +15,14 @@ export async function PUT(request: Request) {
 
   const { gameId, week_number, description, completion_percentage, notes } = await request.json();
 
+  const { data: existing } = await supabase
+    .from('game_one_big_things')
+    .select('completion_percentage')
+    .eq('game_id', gameId)
+    .eq('user_id', user.id)
+    .eq('week_number', week_number)
+    .single();
+
   // Upsert based on game_id, user_id, week_number
   const { data, error } = await supabase
     .from('game_one_big_things')
@@ -39,11 +47,13 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  await logGameActivity(supabase, user.id, 'game_obt_updated', gameId, {
-    section: 'OBTs',
-    week_number,
-    completion_percentage,
-  });
+  if (existing?.completion_percentage !== completion_percentage) {
+    await logGameActivity(supabase, user.id, 'game_obt_updated', gameId, {
+      section: 'OBTs',
+      week_number,
+      completion_percentage,
+    });
+  }
 
   return NextResponse.json(data);
 }

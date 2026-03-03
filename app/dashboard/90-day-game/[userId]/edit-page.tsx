@@ -1085,8 +1085,9 @@ export function EditableGameDetail({
                     disabled={!canEdit}
                     className="text-sm font-bold bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50 min-h-[44px]"
                   >
-                    <option value="0">0%</option>
-                    <option value="100">100%</option>
+                    {Array.from({ length: 21 }, (_, i) => i * 5).map((v) => (
+                      <option key={v} value={v}>{v}%</option>
+                    ))}
                   </select>
                 </div>
                 <textarea
