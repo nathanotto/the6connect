@@ -5,11 +5,11 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
-import { format } from 'date-fns';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ResponseForm } from '@/components/schedule/response-form';
 import { SendInviteButton } from '@/components/schedule/send-invite-button';
+import { EventDate, EventTime } from '@/components/schedule/event-time';
 
 export default async function EventDetailPage({
   params,
@@ -94,13 +94,13 @@ export default async function EventDetailPage({
           <div>
             <span className="text-sm font-medium text-foreground/60">Date:</span>
             <p className="text-lg">
-              {format(new Date(event.proposed_start), 'EEEE, MMMM d, yyyy')}
+              <EventDate iso={event.proposed_start} />
             </p>
           </div>
           <div>
             <span className="text-sm font-medium text-foreground/60">Time:</span>
             <p className="text-lg">
-              {format(new Date(event.proposed_start), 'h:mm a')}
+              <EventTime iso={event.proposed_start} />
             </p>
           </div>
           {event.description && (
