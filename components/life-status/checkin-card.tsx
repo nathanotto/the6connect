@@ -42,7 +42,7 @@ export function CheckinCard({ checkin, member, currentUserId, allUsers }: Checki
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showComments, setShowComments] = useState(false);
+  const [showComments] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
   const [readByUsers, setReadByUsers] = useState<string[]>([]);
@@ -148,7 +148,6 @@ export function CheckinCard({ checkin, member, currentUserId, allUsers }: Checki
       if (response.ok) {
         setComments([...comments, result.data]);
         setNewComment('');
-        router.refresh();
       }
     } catch (error) {
       console.error('Failed to add comment:', error);
@@ -416,13 +415,22 @@ export function CheckinCard({ checkin, member, currentUserId, allUsers }: Checki
             })}
           </div>
 
-          {/* Comments toggle, Edit, and Delete buttons */}
-          <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-3 flex items-center gap-3 bg-zinc-100/50 dark:bg-zinc-900/20">
+          {/* Response input + Edit and Delete buttons */}
+          <form onSubmit={handleAddComment} className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-2 flex items-center gap-2 bg-zinc-100/50 dark:bg-zinc-900/20">
+            <span className="text-xs text-zinc-700 dark:text-zinc-400 font-medium shrink-0">Response:</span>
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add a response..."
+              className="flex-1 px-2 py-0.5 border border-zinc-400 dark:border-zinc-600 bg-background text-sm focus:outline-none focus:ring-1 focus:ring-zinc-600"
+            />
             <button
-              onClick={() => setShowComments(!showComments)}
-              className="text-sm text-zinc-700 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition font-medium"
+              type="submit"
+              disabled={loading || !newComment.trim()}
+              className="px-2 py-0.5 bg-stone-700 hover:bg-stone-800 text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition shrink-0"
             >
-              {showComments ? 'Hide' : 'Show'} responses ({comments.length})
+              {loading ? '...' : 'Send'}
             </button>
 
             {checkin.user_id === currentUserId && isEditable() && (
@@ -443,44 +451,39 @@ export function CheckinCard({ checkin, member, currentUserId, allUsers }: Checki
                 {deleting ? 'Deleting...' : 'Delete check-in'}
               </button>
             )}
-          </div>
+          </form>
         </>
       )}
 
       {/* Comments section */}
       {showComments && (
-        <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 p-3 space-y-0 bg-stone-100 dark:bg-stone-900/30">
+        <div className="border border-zinc-400 dark:border-zinc-600 border-t-0 bg-stone-100 dark:bg-stone-900/30">
           {/* Existing comments */}
-          {comments.map((comment) => (
-            <div key={comment.id} className="border border-stone-400 dark:border-stone-600 p-2 bg-white dark:bg-stone-900/50 mb-0 last:mb-3">
-              <div className="flex items-center gap-2 text-xs text-stone-600 dark:text-stone-400 mb-1">
-                <span className="font-medium">
-                  {comment.user.display_name || comment.user.full_name}
-                </span>
-                <span>•</span>
-                <span>{getRelativeTimeString(comment.created_at)}</span>
+          {comments.length === 0 ? (
+            <p className="px-3 py-2 text-xs text-stone-500 dark:text-stone-400">No responses yet.</p>
+          ) : (
+            [...comments].reverse().map((comment) => (
+              <div key={comment.id} className="border-b border-stone-300 dark:border-stone-700 px-3 py-2 last:border-b-0">
+                <div className="flex items-center gap-2 text-xs text-stone-600 dark:text-stone-400 mb-0.5">
+                  <span className="font-medium">{comment.user.display_name || comment.user.full_name}</span>
+                  <span>•</span>
+                  <span>{getRelativeTimeString(comment.created_at)}</span>
+                  {comment.user.id === currentUserId && (
+                    <button
+                      onClick={async () => {
+                        const res = await fetch(`/api/checkin-comments/${comment.id}`, { method: 'DELETE' });
+                        if (res.ok) setComments((prev) => prev.filter((c) => c.id !== comment.id));
+                      }}
+                      className="ml-auto text-red-500 hover:text-red-700 transition"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
+                <p className="text-sm text-foreground/90 break-words">{linkify(comment.content)}</p>
               </div>
-              <p className="text-sm text-foreground/90 break-words">{linkify(comment.content)}</p>
-            </div>
-          ))}
-
-          {/* Add comment form */}
-          <form onSubmit={handleAddComment} className="border border-stone-400 dark:border-stone-600 p-3 bg-white dark:bg-stone-900/50">
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Add a response..."
-              rows={2}
-              className="w-full px-3 py-2 border border-stone-400 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-600 bg-background text-sm"
-            />
-            <button
-              type="submit"
-              disabled={loading || !newComment.trim()}
-              className="mt-2 px-4 py-1.5 bg-stone-700 hover:bg-stone-800 text-white text-sm font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
-            >
-              {loading ? 'Adding...' : 'Add Response'}
-            </button>
-          </form>
+            ))
+          )}
         </div>
       )}
     </div>
