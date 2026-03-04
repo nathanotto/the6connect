@@ -403,7 +403,12 @@ export function EditableGameDetail({
             ? prev.map((o) => (o.week_number === updated.week_number ? updated : o))
             : [...prev, updated];
         });
+      } else {
+        const errText = await res.text();
+        console.error('OBT save failed:', res.status, errText);
       }
+    } catch (err) {
+      console.error('OBT save error:', err);
     } finally {
       setSaving(false);
     }
@@ -431,7 +436,7 @@ export function EditableGameDetail({
         ...s.keyResults.map((kr) => fetch('/api/90-day-game/key-results', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(kr) })),
         ...s.projects.map((p) => fetch('/api/90-day-game/projects', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) })),
         ...[...s.innerGameLimiting, ...s.innerGameEmpowering].map((item) => fetch('/api/90-day-game/inner-game', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(item) })),
-        ...s.obts.filter((o) => o.description).map((obt) => fetch('/api/90-day-game/one-big-things', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...obt, gameId }) })),
+        ...s.obts.map((obt) => fetch('/api/90-day-game/one-big-things', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...obt, gameId }) })),
       ]);
       setLastSaved(new Date());
       setIsDirty(false);

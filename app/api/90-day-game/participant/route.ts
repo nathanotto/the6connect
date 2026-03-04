@@ -16,6 +16,13 @@ export async function PUT(request: Request) {
 
   const { gameId, opted_in, game_name, game_image_url, setup_complete } = await request.json();
 
+  const { data: existing } = await supabase
+    .from('game_participants')
+    .select('game_name')
+    .eq('game_id', gameId)
+    .eq('user_id', user.id)
+    .single();
+
   const updateData: any = {};
   if (typeof opted_in === 'boolean') updateData.opted_in = opted_in;
   if (game_name !== undefined) updateData.game_name = game_name;
@@ -34,7 +41,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  if (game_name !== undefined) {
+  if (game_name !== undefined && game_name !== existing?.game_name) {
     await logGameActivity(supabase, user.id, 'game_name_updated', gameId, {
       section: 'Setup',
       game_name,

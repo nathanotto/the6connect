@@ -6,7 +6,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
-import { EditableGameDetail } from '../../../[userId]/edit-page';
+import { HistoryGameDetail } from './history-game-detail';
 
 type PageProps = {
   params: Promise<{ gameId: string; userId: string }>;
@@ -82,10 +82,7 @@ export default async function HistoricalGameDetailPage({ params }: PageProps) {
     ]);
 
   return (
-    <EditableGameDetail
-      gameId={gameId}
-      userId={userId}
-      currentUserId={currentUser.id}
+    <HistoryGameDetail
       participant={participant}
       gameData={{
         vision: vision.data,
@@ -99,7 +96,6 @@ export default async function HistoricalGameDetailPage({ params }: PageProps) {
       }}
       gameTitle={game.title || ''}
       gameDescription={game.description || ''}
-      gameStatus={game.status}
       startDate={game.start_date}
       endDate={game.end_date}
     />

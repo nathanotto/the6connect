@@ -15,6 +15,7 @@ export type PersonGroup = {
   name: string;
   lastActivity: string | null;
   entries: ActivityEntry[];
+  currentObt?: { description: string; completion_percentage: number; periodLabel: string } | null;
 };
 
 function timeAgo(dateStr: string): string {
@@ -61,6 +62,14 @@ export function UpdatesFeed({ groups }: { groups: PersonGroup[] }) {
                     : 'no updates recorded'}
                 </span>
               </div>
+
+              {group.currentObt && (
+                <div className="pl-3 border-l border-foreground/30 mb-2">
+                  <p className="text-xs text-foreground/60 uppercase tracking-wide font-semibold">One Big Thing</p>
+                  <p className="text-sm italic pl-2 text-foreground bg-[#e8957a]/20 rounded px-2">{group.currentObt.description || <span className="text-foreground/60">no OBT set</span>}</p>
+                  <p className="text-xs text-foreground/70">{group.currentObt.completion_percentage}% complete</p>
+                </div>
+              )}
 
               {visible.length > 0 ? (
                 <ul className="space-y-1 pl-3 border-l border-foreground/10">

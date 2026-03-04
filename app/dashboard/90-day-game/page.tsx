@@ -276,14 +276,56 @@ export default async function NinetyDayGamePage() {
     .order('created_at', { ascending: false })
     .limit(50);
 
+  // Fetch completed past games with participants
+  const { data: completedGames } = await supabase
+    .from('games')
+    .select('*')
+    .eq('status', 'completed')
+    .order('start_date', { ascending: false });
+
+  const pastGames = await Promise.all(
+    (completedGames || []).map(async (game) => {
+      const { data: gameParticipants } = await supabase
+        .from('game_participants')
+        .select('*, user:users(id, full_name, display_name)')
+        .eq('game_id', game.id)
+        .eq('opted_in', true);
+      return { ...game, participants: gameParticipants || [] };
+    })
+  );
+
+  // Calculate current biweekly period (1–6)
+  const gameStart = new Date(currentGame.start_date).getTime();
+  const daysSinceStart = Math.floor((Date.now() - gameStart) / 86400000);
+  const currentPeriod = Math.min(Math.max(Math.ceil((daysSinceStart + 1) / 14), 1), 6);
+
+  // Period label e.g. "Wks 1–2"
+  const periodStart = new Date(currentGame.start_date);
+  periodStart.setUTCDate(periodStart.getUTCDate() + (currentPeriod - 1) * 14);
+  const periodEnd = new Date(currentGame.start_date);
+  periodEnd.setUTCDate(periodEnd.getUTCDate() + currentPeriod * 14 - 1);
+  const fmtOpt: Intl.DateTimeFormatOptions = { month: 'numeric', day: 'numeric', timeZone: 'UTC' };
+  const currentPeriodLabel = `Wks ${2 * currentPeriod - 1}–${2 * currentPeriod}: ${periodStart.toLocaleDateString('en-US', fmtOpt)}–${periodEnd.toLocaleDateString('en-US', fmtOpt)}`;
+
+  // Fetch current OBT for each participant
+  const { data: currentObts } = await supabase
+    .from('game_one_big_things')
+    .select('user_id, description, completion_percentage')
+    .eq('game_id', currentGame.id)
+    .eq('week_number', currentPeriod);
+
   // Group activity by participant, preserving participant card order
   const groups: PersonGroup[] = gameData.map((p) => {
     const entries = (activityLog || []).filter((a: any) => a.user_id === p.user_id);
+    const obt = (currentObts || []).find((o: any) => o.user_id === p.user_id);
     return {
       userId: p.user_id,
       name: p.user?.display_name || p.user?.full_name || 'Unknown',
       lastActivity: entries.length > 0 ? entries[0].created_at : null,
       entries,
+      currentObt: obt
+        ? { description: obt.description, completion_percentage: obt.completion_percentage, periodLabel: currentPeriodLabel }
+        : { description: '', completion_percentage: 0, periodLabel: currentPeriodLabel },
     };
   });
 
@@ -368,6 +410,51 @@ export default async function NinetyDayGamePage() {
       </div>
 
       <UpdatesFeed groups={groups} />
+
+      {pastGames.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Past Games</h2>
+          {pastGames.map((game) => (
+            <div key={game.id} className="border border-foreground/20 rounded-lg p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold">{game.title || 'Untitled Game'}</h3>
+                  {game.description && (
+                    <p className="text-sm text-foreground/70 mt-0.5">{game.description}</p>
+                  )}
+                  <p className="text-sm text-foreground/50 mt-1">
+                    {new Date(game.start_date).toLocaleDateString()} – {new Date(game.end_date).toLocaleDateString()}
+                  </p>
+                </div>
+                <span className="px-3 py-1 bg-green-500/10 text-green-500 text-xs font-medium rounded shrink-0">
+                  COMPLETED
+                </span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {game.participants.map((p: any) => (
+                  <div
+                    key={p.id}
+                    className="border border-foreground/10 rounded-lg p-3 hover:border-foreground/30 transition-colors"
+                  >
+                    <p className="font-semibold text-sm">
+                      {p.user.display_name || p.user.full_name}
+                    </p>
+                    {p.game_name && (
+                      <p className="text-xs text-foreground/50 mt-0.5">"{p.game_name}"</p>
+                    )}
+                    <Link
+                      href={`/dashboard/90-day-game/history/${game.id}/${p.user_id}`}
+                      className="text-xs text-foreground/50 hover:text-foreground underline mt-2 block"
+                    >
+                      View Game →
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
