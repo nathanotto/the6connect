@@ -14,7 +14,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { id, description, weight_percentage, completion_percentage, notes, logContent } = await request.json();
+  const { id, description, weight_percentage, completion_percentage, notes, logContent, logNotes } = await request.json();
 
   const { data: existing } = await supabase
     .from('game_key_results')
@@ -51,6 +51,13 @@ export async function PUT(request: Request) {
 
   if (logContent) {
     await logGameActivity(supabase, user.id, 'game_key_result_text_updated', data.game_id, {
+      section: 'Key Results',
+      description: description?.slice(0, 60),
+    });
+  }
+
+  if (logNotes) {
+    await logGameActivity(supabase, user.id, 'game_key_result_notes_updated', data.game_id, {
       section: 'Key Results',
       description: description?.slice(0, 60),
     });

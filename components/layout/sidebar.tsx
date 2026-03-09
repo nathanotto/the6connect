@@ -83,9 +83,10 @@ export function Sidebar({ user, profile }: SidebarProps) {
       {/* Sidebar */}
       <div
         className={`
-          fixed md:relative
+          fixed
           inset-y-0 left-0
-          w-64 bg-foreground text-background p-6 flex flex-col
+          w-64 h-screen overflow-y-auto
+          bg-foreground text-background p-6 flex flex-col
           z-40
           transform transition-transform duration-300 ease-in-out
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}

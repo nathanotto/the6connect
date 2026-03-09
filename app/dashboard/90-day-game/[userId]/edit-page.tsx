@@ -529,6 +529,41 @@ export function EditableGameDetail({
     } finally { setSaving(false); }
   };
 
+  const saveKeyResultNotes = async (kr: any, notes: string) => {
+    if (!canEdit) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/90-day-game/key-results', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...kr, notes, logNotes: true }),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setKeyResults((prev) => prev.map((k) => (k.id === saved.id ? saved : k)));
+      }
+    } finally { setSaving(false); }
+  };
+
+  const saveOBTNotes = async (obt: any, notes: string) => {
+    if (!canEdit) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/90-day-game/one-big-things', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...obt, notes, gameId, logNotes: true }),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setObts((prev) => {
+          const exists = prev.find((o) => o.week_number === saved.week_number);
+          return exists ? prev.map((o) => (o.week_number === saved.week_number ? saved : o)) : [...prev, saved];
+        });
+      }
+    } finally { setSaving(false); }
+  };
+
   const saveOBTText = async (obt: any, description: string) => {
     if (!canEdit) return;
     setSaving(true);
@@ -958,17 +993,19 @@ export function EditableGameDetail({
                   />
                   <span>%</span>
                 </label>
-                <input
-                  type="text"
-                  value={kr.notes || ''}
-                  onChange={(e) => {
-                    setKeyResults(keyResults.map((k) => (k.id === kr.id ? { ...k, notes: e.target.value } : k)));
-                  }}
-                  onBlur={() => saveKeyResult(kr)}
-                  disabled={!canEdit}
-                  placeholder="Notes..."
-                  className="flex-1 text-sm bg-transparent border border-foreground/20 rounded px-2 py-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
-                />
+                <div className="flex-1">
+                  <p className="text-xs font-medium text-foreground/50 mb-1">Notes</p>
+                  {renderPencilField({
+                    fieldKey: `kr-notes-${kr.id}`,
+                    currentValue: kr.notes || '',
+                    placeholder: 'Notes...',
+                    rows: 2,
+                    onSave: async (notes) => {
+                      setKeyResults((prev) => prev.map((k) => (k.id === kr.id ? { ...k, notes } : k)));
+                      await saveKeyResultNotes(kr, notes);
+                    },
+                  })}
+                </div>
               </div>
             </div>
           ))}
@@ -1335,6 +1372,7 @@ export function EditableGameDetail({
                   </select>
                 </div>
                 <div className="mb-2">
+                  <p className="text-xs font-medium text-foreground/50 mb-1">One Big Thing</p>
                   {renderPencilField({
                     fieldKey: `obt-desc-${weekNum}`,
                     currentValue: obt.description,
@@ -1350,23 +1388,21 @@ export function EditableGameDetail({
                     },
                   })}
                 </div>
-                <input
-                  type="text"
-                  value={obt.notes || ''}
-                  onChange={(e) => {
-                    const updated = { ...obt, notes: e.target.value };
+                <p className="text-xs font-medium text-foreground/50 mb-1">Notes</p>
+                {renderPencilField({
+                  fieldKey: `obt-notes-${weekNum}`,
+                  currentValue: obt.notes || '',
+                  placeholder: 'Notes...',
+                  rows: 2,
+                  onSave: async (notes) => {
                     setObts((prev) => {
                       const exists = prev.find((o) => o.week_number === weekNum);
-                      return exists
-                        ? prev.map((o) => (o.week_number === weekNum ? updated : o))
-                        : [...prev, updated];
+                      const updated = { ...obt, notes };
+                      return exists ? prev.map((o) => (o.week_number === weekNum ? updated : o)) : [...prev, updated];
                     });
-                  }}
-                  onBlur={() => { if (obt.description) saveOBT(obt); }}
-                  disabled={!canEdit}
-                  placeholder="Notes..."
-                  className="w-full text-xs text-foreground/60 bg-transparent border border-foreground/10 rounded px-2 py-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
-                />
+                    await saveOBTNotes(obt, notes);
+                  },
+                })}
               </div>
             );
           })}
@@ -1375,7 +1411,7 @@ export function EditableGameDetail({
 
       {/* Complete and Archive — active games only */}
       {gameStatus === 'active' && canEdit && (
-        <CompleteAndArchive gameId={gameId} />
+        <CompleteAndArchive gameId={gameId} endDate={endDate} />
       )}
 
       {/* Mark Setup Complete */}
@@ -1418,7 +1454,8 @@ export function EditableGameDetail({
   );
 }
 
-function CompleteAndArchive({ gameId }: { gameId: string }) {
+function CompleteAndArchive({ gameId, endDate }: { gameId: string; endDate: string }) {
+  const gameEnded = new Date() > new Date(endDate);
   const [confirming, setConfirming] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [done, setDone] = useState(false);
@@ -1466,7 +1503,11 @@ function CompleteAndArchive({ gameId }: { gameId: string }) {
         When you are done with this 90-day game, archive your branch. Once all men have archived, the game is
         marked complete.
       </p>
-      {!confirming ? (
+      {!gameEnded ? (
+        <p className="text-sm text-foreground/50 italic">
+          Available after the game ends ({new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}).
+        </p>
+      ) : !confirming ? (
         <button
           onClick={() => setConfirming(true)}
           className="px-5 py-3 border border-foreground/30 rounded-lg hover:bg-foreground/5 text-sm font-medium"

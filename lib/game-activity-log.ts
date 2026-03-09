@@ -76,6 +76,10 @@ export function formatActivityMessage(activityType: string, metadata: any): stri
       return `updated a Project description${desc}`;
     case 'game_inner_game_text_updated':
       return `updated ${metadata?.item_type} item (${metadata?.category}) description${desc}`;
+    case 'game_key_result_notes_updated':
+      return `updated Key Result notes${desc}`;
+    case 'game_obt_notes_updated':
+      return `updated OBT Week ${metadata?.week_number} notes`;
     case 'game_setup_completed':
       return `completed their game setup`;
     case 'game_name_updated':

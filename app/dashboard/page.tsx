@@ -13,6 +13,7 @@ import { GroupMessageForm } from '@/components/messages/group-message-form';
 import { ActivitySummary } from '@/components/dashboard/activity-summary';
 import { MessageList } from '@/components/dashboard/message-list';
 import { PhotoThumbnails } from '@/components/dashboard/photo-thumbnails';
+import { GameProgressStrip } from '@/components/dashboard/game-progress-strip';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -38,6 +39,24 @@ export default async function DashboardPage() {
     .from('users')
     .select('id, full_name, display_name')
     .order('full_name', { ascending: true });
+
+  // Fetch active game + participants for progress strip
+  const { data: activeGame } = await supabase
+    .from('games')
+    .select('id, title, start_date, end_date')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  const activeGameParticipants = activeGame
+    ? await supabase
+        .from('game_participants')
+        .select('user_id, game_name, user:users(id, full_name, display_name)')
+        .eq('game_id', activeGame.id)
+        .eq('opted_in', true)
+        .then(({ data }) => data || [])
+    : [];
 
   // For each user, get their most recent check-in
   const usersWithCheckins = await Promise.all(
@@ -125,6 +144,14 @@ export default async function DashboardPage() {
           </p>
         </div>
       </div>
+
+      {activeGame && activeGameParticipants.length > 0 && (
+        <GameProgressStrip
+          game={activeGame}
+          participants={activeGameParticipants as any}
+          usersWithCheckins={usersWithCheckins}
+        />
+      )}
 
       <ActivitySummary />
 
