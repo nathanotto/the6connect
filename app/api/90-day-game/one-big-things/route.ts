@@ -13,7 +13,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { gameId, week_number, description, completion_percentage, notes } = await request.json();
+  const { gameId, week_number, description, completion_percentage, notes, logContent } = await request.json();
 
   const { data: existing } = await supabase
     .from('game_one_big_things')
@@ -52,6 +52,13 @@ export async function PUT(request: Request) {
       section: 'OBTs',
       week_number,
       completion_percentage,
+    });
+  }
+
+  if (logContent) {
+    await logGameActivity(supabase, user.id, 'game_obt_text_updated', gameId, {
+      section: 'OBTs',
+      week_number,
     });
   }
 

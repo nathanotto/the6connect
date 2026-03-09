@@ -13,7 +13,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { id, description, rating, notes } = await request.json();
+  const { id, description, rating, notes, logContent } = await request.json();
 
   const { data, error } = await supabase
     .from('game_inner_game_items')
@@ -32,7 +32,14 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Inner game items have no completion_percentage — updates not logged per policy
+  if (logContent) {
+    await logGameActivity(supabase, user.id, 'game_inner_game_text_updated', data.game_id, {
+      section: 'Inner Game',
+      item_type: data.item_type,
+      category: data.category,
+      description: description?.slice(0, 60),
+    });
+  }
 
   return NextResponse.json(data);
 }

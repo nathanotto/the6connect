@@ -61,6 +61,20 @@ export function EditableGameDetail({
 
   const [saving, setSaving] = useState(false);
   const [setupErrors, setSetupErrors] = useState<string[]>([]);
+
+  // Pencil-edit pattern: tracks which fields are in edit mode and their draft values
+  const [editingFields, setEditingFields] = useState<Set<string>>(new Set());
+  const [fieldDrafts, setFieldDrafts] = useState<Record<string, string>>({});
+
+  const startEditing = (fieldKey: string, currentValue: string) => {
+    setEditingFields((prev) => new Set(prev).add(fieldKey));
+    setFieldDrafts((prev) => ({ ...prev, [fieldKey]: currentValue }));
+  };
+
+  const cancelEditing = (fieldKey: string) => {
+    setEditingFields((prev) => { const s = new Set(prev); s.delete(fieldKey); return s; });
+    setFieldDrafts((prev) => { const s = { ...prev }; delete s[fieldKey]; return s; });
+  };
   const [completingSetup, setCompletingSetup] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [isSavingAll, setIsSavingAll] = useState(false);
@@ -423,6 +437,117 @@ export function EditableGameDetail({
     });
   };
 
+  // Explicit save functions triggered by pencil Save button — include logContent: true
+  const saveVisionText = async (content: string) => {
+    if (!canEdit) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/90-day-game/vision', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gameId, content, completion_percentage: vision?.completion_percentage || 0, logContent: true }),
+      });
+      if (res.ok) setVision(await res.json());
+    } finally { setSaving(false); }
+  };
+
+  const saveWhyText = async (content: string) => {
+    if (!canEdit) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/90-day-game/why', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gameId, content, completion_percentage: why?.completion_percentage || 0, logContent: true }),
+      });
+      if (res.ok) setWhy(await res.json());
+    } finally { setSaving(false); }
+  };
+
+  const saveObjectiveText = async (content: string) => {
+    if (!canEdit) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/90-day-game/objective', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gameId, content, completion_percentage: objective?.completion_percentage || 0, logContent: true }),
+      });
+      if (res.ok) setObjective(await res.json());
+    } finally { setSaving(false); }
+  };
+
+  const saveKeyResultText = async (kr: any, description: string) => {
+    if (!canEdit) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/90-day-game/key-results', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...kr, description, logContent: true }),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setKeyResults((prev) => prev.map((k) => (k.id === saved.id ? saved : k)));
+      }
+    } finally { setSaving(false); }
+  };
+
+  const saveProjectText = async (project: any, description: string) => {
+    if (!canEdit) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/90-day-game/projects', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...project, description, logContent: true }),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setProjects((prev) => prev.map((p) => (p.id === saved.id ? saved : p)));
+      }
+    } finally { setSaving(false); }
+  };
+
+  const saveInnerGameText = async (item: any, description: string) => {
+    if (!canEdit) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/90-day-game/inner-game', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...item, description, logContent: true }),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        if (saved.item_type === 'limiting') {
+          setInnerGameLimiting((prev) => prev.map((i) => (i.id === saved.id ? saved : i)));
+        } else {
+          setInnerGameEmpowering((prev) => prev.map((i) => (i.id === saved.id ? saved : i)));
+        }
+      }
+    } finally { setSaving(false); }
+  };
+
+  const saveOBTText = async (obt: any, description: string) => {
+    if (!canEdit) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/90-day-game/one-big-things', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...obt, description, gameId, logContent: true }),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setObts((prev) => {
+          const exists = prev.find((o) => o.week_number === saved.week_number);
+          return exists ? prev.map((o) => (o.week_number === saved.week_number ? saved : o)) : [...prev, saved];
+        });
+      }
+    } finally { setSaving(false); }
+  };
+
   const triggerSaveAll = async () => {
     if (!canEdit) return;
     const s = stateRef.current;
@@ -500,6 +625,77 @@ export function EditableGameDetail({
     }
   };
 
+  // Renders a text field with pencil-edit pattern: read-only + ✏ → textarea + Save/Cancel
+  const renderPencilField = ({
+    fieldKey,
+    currentValue,
+    placeholder,
+    rows = 3,
+    onSave,
+  }: {
+    fieldKey: string;
+    currentValue: string;
+    placeholder: string;
+    rows?: number;
+    onSave: (value: string) => Promise<void>;
+  }) => {
+    const isEditingThis = editingFields.has(fieldKey);
+    const draft = fieldDrafts[fieldKey] ?? '';
+
+    if (!canEdit) {
+      return (
+        <p className="text-foreground/80 leading-relaxed whitespace-pre-wrap">
+          {currentValue || <span className="text-foreground/30 italic">{placeholder}</span>}
+        </p>
+      );
+    }
+
+    if (!isEditingThis) {
+      return (
+        <div className="flex items-start gap-2">
+          <button
+            onClick={() => startEditing(fieldKey, currentValue)}
+            className="shrink-0 text-foreground/60 hover:text-foreground transition-colors text-base leading-none pt-0.5"
+            title="Edit"
+          >
+            ✏
+          </button>
+          <p className="flex-1 text-foreground/80 leading-relaxed whitespace-pre-wrap">
+            {currentValue || <span className="text-foreground/30 italic">{placeholder}</span>}
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-2">
+        <textarea
+          autoFocus
+          value={draft}
+          onChange={(e) => setFieldDrafts((prev) => ({ ...prev, [fieldKey]: e.target.value }))}
+          rows={rows}
+          className="w-full text-foreground/80 leading-relaxed bg-transparent border border-foreground/30 rounded p-3 focus:border-foreground/60 outline-none resize-y"
+          placeholder={placeholder}
+        />
+        <div className="flex gap-2">
+          <button
+            onClick={async () => { await onSave(draft); cancelEditing(fieldKey); }}
+            disabled={saving}
+            className="text-sm px-4 py-1.5 bg-foreground text-background rounded hover:opacity-90 disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+          <button
+            onClick={() => cancelEditing(fieldKey)}
+            className="text-sm px-4 py-1.5 border border-foreground/20 rounded hover:bg-foreground/5"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -558,16 +754,51 @@ export function EditableGameDetail({
       <div className="border border-foreground/20 rounded-lg p-4 md:p-6">
         <h2 className="text-lg md:text-xl font-semibold mb-1">Game Name</h2>
         <p className="text-sm text-foreground/50 mb-3">Your personal name for this game</p>
-        <input
-          type="text"
-          value={gameName}
-          onChange={(e) => setGameName(e.target.value.slice(0, 150))}
-          onBlur={(e) => saveGameName(e.target.value)}
-          disabled={!canEdit}
-          placeholder='e.g., "D.O. or Die", "Foundation Year"'
-          className="w-full px-3 py-2 bg-transparent border border-foreground/20 rounded disabled:opacity-50 disabled:border-transparent"
-          maxLength={150}
-        />
+        {canEdit && editingFields.has('gameName') ? (
+          <div className="space-y-2">
+            <input
+              autoFocus
+              type="text"
+              value={fieldDrafts['gameName'] ?? ''}
+              onChange={(e) => setFieldDrafts((prev) => ({ ...prev, gameName: e.target.value.slice(0, 150) }))}
+              maxLength={150}
+              placeholder='e.g., "D.O. or Die", "Foundation Year"'
+              className="w-full px-3 py-2 bg-transparent border border-foreground/30 rounded outline-none focus:border-foreground/60"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={async () => {
+                  const name = fieldDrafts['gameName'] ?? '';
+                  setGameName(name);
+                  await saveGameName(name);
+                  cancelEditing('gameName');
+                }}
+                disabled={saving}
+                className="text-sm px-4 py-1.5 bg-foreground text-background rounded hover:opacity-90 disabled:opacity-50"
+              >
+                {saving ? 'Saving...' : 'Save'}
+              </button>
+              <button onClick={() => cancelEditing('gameName')} className="text-sm px-4 py-1.5 border border-foreground/20 rounded hover:bg-foreground/5">
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            {canEdit && (
+              <button
+                onClick={() => startEditing('gameName', gameName)}
+                className="shrink-0 text-foreground/60 hover:text-foreground transition-colors text-base"
+                title="Edit"
+              >
+                ✏
+              </button>
+            )}
+            <p className="flex-1 text-foreground/80">
+              {gameName || <span className="text-foreground/30 italic">No name set</span>}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Vision Statement */}
@@ -588,14 +819,16 @@ export function EditableGameDetail({
             className="w-14 md:w-16 text-base md:text-lg font-bold text-right bg-transparent border border-foreground/20 rounded px-2 py-1 disabled:opacity-50 min-h-[44px]"
           />
         </div>
-        <textarea
-          value={vision?.content || ''}
-          onChange={(e) => setVision({ ...vision, content: e.target.value })}
-          onBlur={(e) => saveVision(e.target.value, vision?.completion_percentage || 0)}
-          disabled={!canEdit}
-          className="w-full min-h-[100px] text-foreground/80 leading-relaxed bg-transparent border border-foreground/20 rounded p-3 disabled:opacity-50 disabled:border-transparent"
-          placeholder="Enter your vision statement..."
-        />
+        {renderPencilField({
+          fieldKey: 'vision',
+          currentValue: vision?.content || '',
+          placeholder: 'Enter your vision statement...',
+          rows: 4,
+          onSave: async (content) => {
+            setVision((prev: any) => ({ ...prev, content }));
+            await saveVisionText(content);
+          },
+        })}
       </div>
 
       {/* Why Statement */}
@@ -616,14 +849,16 @@ export function EditableGameDetail({
             className="w-14 md:w-16 text-base md:text-lg font-bold text-right bg-transparent border border-foreground/20 rounded px-2 py-1 disabled:opacity-50 min-h-[44px]"
           />
         </div>
-        <textarea
-          value={why?.content || ''}
-          onChange={(e) => setWhy({ ...why, content: e.target.value })}
-          onBlur={(e) => saveWhy(e.target.value, why?.completion_percentage || 0)}
-          disabled={!canEdit}
-          className="w-full min-h-[100px] text-foreground/80 leading-relaxed bg-transparent border border-foreground/20 rounded p-3 disabled:opacity-50 disabled:border-transparent"
-          placeholder="Enter your why statement..."
-        />
+        {renderPencilField({
+          fieldKey: 'why',
+          currentValue: why?.content || '',
+          placeholder: 'Enter your why statement...',
+          rows: 4,
+          onSave: async (content) => {
+            setWhy((prev: any) => ({ ...prev, content }));
+            await saveWhyText(content);
+          },
+        })}
       </div>
 
       {/* Objective */}
@@ -644,14 +879,16 @@ export function EditableGameDetail({
             className="w-14 md:w-16 text-base md:text-lg font-bold text-right bg-transparent border border-foreground/20 rounded px-2 py-1 disabled:opacity-50 min-h-[44px]"
           />
         </div>
-        <textarea
-          value={objective?.content || ''}
-          onChange={(e) => setObjective({ ...objective, content: e.target.value })}
-          onBlur={(e) => saveObjective(e.target.value, objective?.completion_percentage || 0)}
-          disabled={!canEdit}
-          className="w-full min-h-[100px] text-foreground/80 leading-relaxed bg-transparent border border-foreground/20 rounded p-3 disabled:opacity-50 disabled:border-transparent"
-          placeholder="Enter your objective..."
-        />
+        {renderPencilField({
+          fieldKey: 'objective',
+          currentValue: objective?.content || '',
+          placeholder: 'Enter your objective...',
+          rows: 4,
+          onSave: async (content) => {
+            setObjective((prev: any) => ({ ...prev, content }));
+            await saveObjectiveText(content);
+          },
+        })}
       </div>
 
       {/* Key Results */}
@@ -664,16 +901,18 @@ export function EditableGameDetail({
           {keyResults?.map((kr) => (
             <div key={kr.id} className="border border-foreground/10 rounded p-3">
               <div className="flex items-start gap-2 mb-2">
-                <textarea
-                  value={kr.description}
-                  onChange={(e) => {
-                    setKeyResults(keyResults.map((k) => (k.id === kr.id ? { ...k, description: e.target.value } : k)));
-                  }}
-                  onBlur={() => saveKeyResult(kr)}
-                  disabled={!canEdit}
-                  className="flex-1 text-sm bg-transparent border border-foreground/10 rounded p-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
-                  rows={2}
-                />
+                <div className="flex-1">
+                  {renderPencilField({
+                    fieldKey: `kr-desc-${kr.id}`,
+                    currentValue: kr.description,
+                    placeholder: 'Key result description...',
+                    rows: 2,
+                    onSave: async (description) => {
+                      setKeyResults((prev) => prev.map((k) => (k.id === kr.id ? { ...k, description } : k)));
+                      await saveKeyResultText(kr, description);
+                    },
+                  })}
+                </div>
                 {canEdit && (
                   <button
                     onClick={() => deleteKeyResult(kr.id)}
@@ -755,18 +994,18 @@ export function EditableGameDetail({
           {projects?.map((project) => (
             <div key={project.id} className="border border-foreground/10 rounded p-3">
               <div className="flex items-start gap-2 mb-2">
-                <textarea
-                  value={project.description}
-                  onChange={(e) => {
-                    setProjects(
-                      projects.map((p) => (p.id === project.id ? { ...p, description: e.target.value } : p))
-                    );
-                  }}
-                  onBlur={() => saveProject(project)}
-                  disabled={!canEdit}
-                  className="flex-1 text-sm bg-transparent border border-foreground/10 rounded p-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
-                  rows={3}
-                />
+                <div className="flex-1">
+                  {renderPencilField({
+                    fieldKey: `project-desc-${project.id}`,
+                    currentValue: project.description,
+                    placeholder: 'Project description...',
+                    rows: 2,
+                    onSave: async (description) => {
+                      setProjects((prev) => prev.map((p) => (p.id === project.id ? { ...p, description } : p)));
+                      await saveProjectText(project, description);
+                    },
+                  })}
+                </div>
                 {canEdit && (
                   <button
                     onClick={() => deleteProject(project.id)}
@@ -853,18 +1092,18 @@ export function EditableGameDetail({
               <div key={item.id} className="bg-red-500/5 border border-red-500/20 rounded p-3">
                 <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
                   <span className="text-xs font-semibold text-red-500/80 uppercase md:w-24 md:shrink-0">{item.category}</span>
-                  <input
-                    type="text"
-                    value={item.description}
-                    onChange={(e) => {
-                      setInnerGameLimiting(
-                        innerGameLimiting.map((i) => (i.id === item.id ? { ...i, description: e.target.value } : i))
-                      );
-                    }}
-                    onBlur={() => saveInnerGame(item)}
-                    disabled={!canEdit}
-                    className="flex-1 text-sm bg-transparent border border-foreground/10 rounded px-2 py-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
-                  />
+                  <div className="flex-1">
+                    {renderPencilField({
+                      fieldKey: `limiting-desc-${item.id}`,
+                      currentValue: item.description,
+                      placeholder: 'Description...',
+                      rows: 2,
+                      onSave: async (description) => {
+                        setInnerGameLimiting((prev) => prev.map((i) => (i.id === item.id ? { ...i, description } : i)));
+                        await saveInnerGameText(item, description);
+                      },
+                    })}
+                  </div>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
@@ -953,18 +1192,18 @@ export function EditableGameDetail({
               <div key={item.id} className="bg-green-500/5 border border-green-500/20 rounded p-3">
                 <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
                   <span className="text-xs font-semibold text-green-500/80 uppercase md:w-24 md:shrink-0">{item.category}</span>
-                  <input
-                    type="text"
-                    value={item.description}
-                    onChange={(e) => {
-                      setInnerGameEmpowering(
-                        innerGameEmpowering.map((i) => (i.id === item.id ? { ...i, description: e.target.value } : i))
-                      );
-                    }}
-                    onBlur={() => saveInnerGame(item)}
-                    disabled={!canEdit}
-                    className="flex-1 text-sm bg-transparent border border-foreground/10 rounded px-2 py-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
-                  />
+                  <div className="flex-1">
+                    {renderPencilField({
+                      fieldKey: `empowering-desc-${item.id}`,
+                      currentValue: item.description,
+                      placeholder: 'Description...',
+                      rows: 2,
+                      onSave: async (description) => {
+                        setInnerGameEmpowering((prev) => prev.map((i) => (i.id === item.id ? { ...i, description } : i)));
+                        await saveInnerGameText(item, description);
+                      },
+                    })}
+                  </div>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
@@ -1095,23 +1334,22 @@ export function EditableGameDetail({
                     ))}
                   </select>
                 </div>
-                <textarea
-                  value={obt.description}
-                  onChange={(e) => {
-                    const updated = { ...obt, description: e.target.value };
-                    setObts((prev) => {
-                      const exists = prev.find((o) => o.week_number === weekNum);
-                      return exists
-                        ? prev.map((o) => (o.week_number === weekNum ? updated : o))
-                        : [...prev, updated];
-                    });
-                  }}
-                  onBlur={() => { if (obt.description) saveOBT(obt); }}
-                  disabled={!canEdit}
-                  placeholder="What's your One Big Thing for this bi-week?"
-                  className="w-full text-sm bg-transparent border border-foreground/10 rounded p-2 mb-2 disabled:opacity-50 disabled:border-transparent min-h-[44px]"
-                  rows={2}
-                />
+                <div className="mb-2">
+                  {renderPencilField({
+                    fieldKey: `obt-desc-${weekNum}`,
+                    currentValue: obt.description,
+                    placeholder: "What's your One Big Thing for this bi-week?",
+                    rows: 2,
+                    onSave: async (description) => {
+                      const updated = { ...obt, description };
+                      setObts((prev) => {
+                        const exists = prev.find((o) => o.week_number === weekNum);
+                        return exists ? prev.map((o) => (o.week_number === weekNum ? updated : o)) : [...prev, updated];
+                      });
+                      await saveOBTText(obt, description);
+                    },
+                  })}
+                </div>
                 <input
                   type="text"
                   value={obt.notes || ''}

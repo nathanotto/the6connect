@@ -62,6 +62,20 @@ export function formatActivityMessage(activityType: string, metadata: any): stri
       return `deleted an Inner Game item${desc}`;
     case 'game_obt_updated':
       return `updated OBT Week ${metadata?.week_number} to ${metadata?.completion_percentage ?? 0}%`;
+    case 'game_vision_text_updated':
+      return `updated their Vision statement`;
+    case 'game_why_text_updated':
+      return `updated their Why statement`;
+    case 'game_objective_text_updated':
+      return `updated their Objective`;
+    case 'game_obt_text_updated':
+      return `updated OBT Week ${metadata?.week_number} description`;
+    case 'game_key_result_text_updated':
+      return `updated a Key Result description${desc}`;
+    case 'game_project_text_updated':
+      return `updated a Project description${desc}`;
+    case 'game_inner_game_text_updated':
+      return `updated ${metadata?.item_type} item (${metadata?.category}) description${desc}`;
     case 'game_setup_completed':
       return `completed their game setup`;
     case 'game_name_updated':
